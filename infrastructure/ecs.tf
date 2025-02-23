@@ -1,7 +1,9 @@
+# ECS Cluster
 resource "aws_ecs_cluster" "ecs_cluster" {
   name = var.ecs_cluster_name
 }
 
+# ECS Service
 resource "aws_ecs_service" "app_service" {
   depends_on = [aws_lb.app_alb]
 
@@ -12,7 +14,7 @@ resource "aws_ecs_service" "app_service" {
   desired_count   = 1
 
   network_configuration {
-    subnets         = [aws_subnet.private_1.id, aws_subnet.private_2.id]
+    subnets          = [aws_subnet.private_1.id, aws_subnet.private_2.id]
     security_groups  = [aws_security_group.app_sg.id]
     assign_public_ip = false
   }
@@ -22,4 +24,80 @@ resource "aws_ecs_service" "app_service" {
     container_name   = var.app_name
     container_port   = var.app_port
   }
+}
+
+# Secrets
+data "aws_secretsmanager_secret" "movie_search_secrets" {
+  name = "movie-search-secrets"
+}
+
+data "aws_secretsmanager_secret_version" "movie_search_secrets_version" {
+  secret_id = data.aws_secretsmanager_secret.movie_search_secrets.id
+}
+
+# ECS Task Definition
+resource "aws_ecs_task_definition" "app_task" {
+  family                   = var.app_name
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = aws_iam_role.ecs_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
+
+  container_definitions = jsonencode([
+    {
+      name  = var.app_name
+      image = var.docker_image
+      portMappings = [
+        {
+          containerPort = var.app_port
+        }
+      ],
+      environment = [
+        {
+          name  = "GOOGLE_CALLBACK_URL"
+          value = var.environment_variables["GOOGLE_CALLBACK_URL"]
+        },
+        {
+          name  = "REDIRECT_URL"
+          value = var.environment_variables["REDIRECT_URL"]
+        },
+        {
+          name  = "SESSION_COOKIE_DOMAIN"
+          value = var.environment_variables["SESSION_COOKIE_DOMAIN"]
+        },
+        {
+          name  = "ENV"
+          value = var.environment_variables["ENV"]
+        },
+        {
+          name  = "PORT"
+          value = var.environment_variables["PORT"]
+        }
+      ],
+      secrets = [
+        {
+          name      = "GOOGLE_CLIENT_ID"
+          valueFrom = data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn
+        },
+        {
+          name      = "GOOGLE_CLIENT_SECRET"
+          valueFrom = data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn
+        },
+        {
+          name      = "SESSION_SECRET"
+          valueFrom = data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn
+        }
+      ],
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = "/ecs/${var.app_name}"
+          awslogs-region        = "us-east-1"
+          awslogs-stream-prefix = "ecs"
+        }
+      }
+    }
+  ])
 }
