@@ -1,0 +1,21 @@
+services:
+    server:
+        image: news-service-server
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                TARGETOS: ${TARGETOS:-darwin}      # Default to Linux
+                TARGETARCH: ${TARGETARCH:-arm64}
+        restart: on-failure
+        environment:
+            PORT: ${PORT}
+            GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+            GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+            GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
+            REDIRECT_URL: ${REDIRECT_SECURE}
+            SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN}
+            ENV: ${ENV}
+            SESSION_SECRET: ${SESSION_SECRET}
+        ports:
+            - "8100:8100"
