@@ -2,10 +2,10 @@ services:
     server:
         image: news-service-server
         build:
-            context: .
+            context: ..
             dockerfile: Dockerfile
             args:
-                TARGETOS: ${TARGETOS:-darwin}      # Default to Linux
+                TARGETOS: ${TARGETOS:-darwin}
                 TARGETARCH: ${TARGETARCH:-arm64}
         restart: on-failure
         environment:
