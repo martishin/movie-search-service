@@ -1,13 +1,13 @@
 import { cleanup, render } from "@testing-library/react";
-import App from "./App";
+import Index from "./Index";
 import { expect } from "@jest/globals";
 
 afterEach(() => {
   cleanup();
 });
-describe("App", () => {
+describe("Index", () => {
   test("should display Hello world!", () => {
-    const { container, getByText } = render(<App />);
+    const { container, getByText } = render(<Index />);
     expect(container).toMatchSnapshot();
 
     expect(getByText("Hello world!")).toBeTruthy();

@@ -11,10 +11,12 @@
     "test": "jest"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@tailwindcss/vite": "^4.0.8",
     "@types/react-test-renderer": "^19.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-router": "^7.2.0",
     "tailwindcss": "^4.0.8"
   },
   "devDependencies": {
