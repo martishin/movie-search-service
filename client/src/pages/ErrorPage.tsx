@@ -1,24 +1,16 @@
 import { JSX } from "react";
-import { isRouteErrorResponse, useRouteError, useNavigate, useOutletContext } from "react-router";
-import Header from "../layout/Header";
-import UserDetails from "../../models/UserDetails";
-
-interface ContextType {
-  userDetails: UserDetails | null;
-  setUserDetails: (userDetails: UserDetails | null) => void;
-}
+import { isRouteErrorResponse, useRouteError, useNavigate } from "react-router";
+import Header from "../components/layout/Header";
+import { useAuth } from "../context/AuthContext";
 
 export default function ErrorPage(): JSX.Element {
   const error = useRouteError();
   const navigate = useNavigate();
-
-  // ✅ Provide a default empty object to prevent errors if context is not available
-  const { userDetails, setUserDetails } = useOutletContext<ContextType>() || {};
+  const { userDetails, logout } = useAuth();
 
   return (
     <div className="container mx-auto mt-8 h-screen max-w-screen-lg">
-      {/* Show the Header with user details (handles case where userDetails is undefined) */}
-      <Header userDetails={userDetails ?? null} setUserDetails={setUserDetails ?? (() => {})} />
+      <Header userDetails={userDetails} setUserDetails={() => {}} />
 
       <div className="flex h-4/6 items-center justify-center">
         <div className="text-center">
@@ -31,7 +23,6 @@ export default function ErrorPage(): JSX.Element {
               <em>{error.message}</em>
             ) : null}
           </p>
-          {/* Back button */}
           <div className="mt-6">
             <button
               onClick={() => navigate("/", { replace: true })}
@@ -39,6 +30,14 @@ export default function ErrorPage(): JSX.Element {
             >
               Go Home
             </button>
+            {userDetails && (
+              <button
+                onClick={logout}
+                className="ml-4 mb-2 rounded-lg bg-red-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-red-800"
+              >
+                Logout
+              </button>
+            )}
           </div>
         </div>
       </div>

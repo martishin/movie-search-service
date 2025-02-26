@@ -1,7 +1,7 @@
 import { JSX } from "react";
-import PageHeader from "../layout/PageHeader";
+import PageHeader from "../components/layout/PageHeader";
 import { Link } from "react-router";
-import ticketLogo from "./../../assets/movie_tickets.jpg";
+import ticketLogo from "../assets/movie_tickets.jpg";
 
 export default function Home(): JSX.Element {
   return (

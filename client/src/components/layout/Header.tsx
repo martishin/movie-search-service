@@ -1,26 +1,14 @@
 import { JSX } from "react";
 import { Link, useNavigate } from "react-router";
-import UserDetails from "../../models/UserDetails";
+import { useAuth } from "../../context/AuthContext";
 
-interface HeaderProps {
-  userDetails: UserDetails | null;
-  setUserDetails: (userDetails: UserDetails | null) => void;
-}
-
-export default function Header({ userDetails, setUserDetails }: HeaderProps): JSX.Element {
+export default function Header(): JSX.Element {
+  const { userDetails, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    try {
-      await fetch("/api/logout", {
-        credentials: "include",
-      });
-      setUserDetails(null);
-      navigate("/");
-    } catch (err) {
-      console.error("Error during logout:", err);
-      alert("Logout failed. Please try again.");
-    }
+    await logout();
+    navigate("/");
   };
 
   return (
@@ -32,11 +20,12 @@ export default function Header({ userDetails, setUserDetails }: HeaderProps): JS
       </div>
       <div className="max-w-full flex-grow px-4 text-end">
         {userDetails ? (
-          <a href="#!" onClick={handleLogout}>
-            <span className="mb-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-200">
-              Log Out
-            </span>
-          </a>
+          <button
+            onClick={handleLogout}
+            className="mb-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-200"
+          >
+            Log Out
+          </button>
         ) : (
           <Link to="/login">
             <span className="mb-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800">
