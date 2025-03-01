@@ -5,7 +5,12 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/martishin/movie-search-service/internal/models/config"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/martishin/movie-search-service/internal/handler"
+	"github.com/martishin/movie-search-service/internal/model/config"
+	"github.com/martishin/movie-search-service/internal/repository"
+	"github.com/martishin/movie-search-service/internal/route"
+	"github.com/martishin/movie-search-service/internal/service"
 
 	"github.com/gorilla/sessions"
 	"github.com/markbates/goth"
@@ -32,11 +37,21 @@ func configureGoogleOauth(config *config.OAuthConfig) {
 	)
 }
 
-func NewServer(logger *slog.Logger, serverConfig *config.ServerConfig, oauthConfig *config.OAuthConfig) *http.Server {
+func NewServer(logger *slog.Logger, pool *pgxpool.Pool, serverConfig *config.ServerConfig, oauthConfig *config.OAuthConfig) *http.Server {
+	// Initialize repositories
+	userRepo := repository.NewUserRepository(pool)
+
+	// Initialise services
+	userService := service.NewUserService(userRepo)
+
+	// Initialize handlers
+	userHandler := handler.NewUserHandler(userService)
+	authHandler := handler.NewAuthHandler(userService, oauthConfig)
+
 	// Create Server instance
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", serverConfig.Port),
-		Handler:      registerRoutes(logger),
+		Handler:      route.RegisterRoutes(logger, userHandler, authHandler),
 		IdleTimeout:  serverConfig.IdleTimeout,
 		ReadTimeout:  serverConfig.ReadTimeout,
 		WriteTimeout: serverConfig.WriteTimeout,

@@ -1,12 +1,10 @@
-import UserDetails from "../../models/UserDetails";
 import { NavLink } from "react-router";
 import { JSX } from "react";
+import { useAuth } from "../../context/AuthContext";
 
-interface NavigationProps {
-  userDetails: UserDetails | null;
-}
+export default function Navigation(): JSX.Element {
+  const { userDetails } = useAuth();
 
-export default function Navigation({ userDetails }: NavigationProps): JSX.Element {
   const commonLinks = [
     ["Home", "/"],
     ["Movies", "/movies"],
@@ -22,7 +20,7 @@ export default function Navigation({ userDetails }: NavigationProps): JSX.Elemen
   const links = userDetails ? [...commonLinks, ...loggedInLinks] : commonLinks;
 
   return (
-    <div className="ml-4 mr-4">
+    <div className="mr-4 ml-4">
       <nav aria-label="Main navigation">
         <ul className="border-x border-t border-gray-200 bg-white text-gray-900">
           {links.map(([title, path]) => (

@@ -18,7 +18,7 @@ const LoginInput = forwardRef<HTMLInputElement, LoginInputProps>((props, ref) =>
     <div className="mt-3">
       <label
         htmlFor={name}
-        className="block text-center text-sm font-medium leading-6 text-gray-900"
+        className="block text-center text-sm leading-6 font-medium text-gray-900"
       >
         {title}
       </label>
@@ -30,7 +30,7 @@ const LoginInput = forwardRef<HTMLInputElement, LoginInputProps>((props, ref) =>
           autoComplete={autoComplete}
           className={`block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 ring-1 ring-inset ${
             hasError ? "ring-red-600" : "ring-gray-300"
-          } placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600`}
+          } placeholder:text-gray-400 focus:ring-2 focus:ring-blue-600 focus:ring-inset`}
           ref={ref}
           onChange={onChange}
           aria-invalid={hasError ? "true" : "false"}

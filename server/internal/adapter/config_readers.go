@@ -1,4 +1,4 @@
-package adapters
+package adapter
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/martishin/movie-search-service/internal/models/config"
+	"github.com/martishin/movie-search-service/internal/model/config"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -30,11 +30,12 @@ func ReadGoogleOauthConfig() (*config.OAuthConfig, error) {
 	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
 	callbackURL := os.Getenv("GOOGLE_CALLBACK_URL")
 
+	redirectURL := os.Getenv("REDIRECT_URL")
 	sessionSecret := os.Getenv("SESSION_SECRET")
 	domain := os.Getenv("SESSION_COOKIE_DOMAIN")
 	environment := os.Getenv("ENV")
 
-	if clientID == "" || clientSecret == "" || callbackURL == "" ||
+	if clientID == "" || clientSecret == "" || callbackURL == "" || redirectURL == "" ||
 		sessionSecret == "" || domain == "" || environment == "" {
 		return nil, fmt.Errorf("google OAuth environment variables are not set")
 	}
@@ -45,6 +46,7 @@ func ReadGoogleOauthConfig() (*config.OAuthConfig, error) {
 		ClientID:      clientID,
 		ClientSecret:  clientSecret,
 		CallbackURL:   callbackURL,
+		RedirectURL:   redirectURL,
 		SessionSecret: sessionSecret,
 		Domain:        domain,
 		IsProduction:  isProduction,

@@ -37,7 +37,7 @@ func LoggingMiddleware() func(http.Handler) http.Handler {
 			// Log incoming request (including request body)
 			logger.Info("Request received",
 				slog.String("method", r.Method),
-				slog.String("path", r.URL.Path),
+				slog.String("path", r.URL.String()),
 				slog.String("request_body", string(requestBody)),
 			)
 
@@ -55,7 +55,7 @@ func LoggingMiddleware() func(http.Handler) http.Handler {
 			// Log response (without response body)
 			logger.Info("Request completed",
 				slog.String("method", r.Method),
-				slog.String("path", r.URL.Path),
+				slog.String("path", r.URL.String()),
 				slog.Int("status", responseWrapper.statusCode),
 				slog.Int64("duration_ms", durationMs),
 			)

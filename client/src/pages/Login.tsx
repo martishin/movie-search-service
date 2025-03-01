@@ -62,7 +62,7 @@ export default function Login() {
   return (
     <div>
       <PageHeader title="Login" />
-      <form className="ml-auto mr-auto mt-3 w-3/5 max-w-xs" onSubmit={handleEmailLogin}>
+      <form className="mt-3 mr-auto ml-auto w-3/5 max-w-xs" onSubmit={handleEmailLogin}>
         <LoginInput
           title="Email Address"
           type="email"
@@ -87,7 +87,7 @@ export default function Login() {
           <input
             type="submit"
             disabled={loading}
-            className="flex w-full justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white hover:bg-blue-800 focus-visible:bg-blue-600 focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="flex w-full justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm leading-6 font-semibold text-white hover:bg-blue-800 focus-visible:bg-blue-600 focus-visible:outline-2 focus-visible:outline-offset-2"
             value={loading ? "Logging in..." : "Log In"}
           />
         </div>
@@ -99,7 +99,7 @@ export default function Login() {
 
       <p className="mt-4 text-center text-sm text-gray-500">
         Not a member?{" "}
-        <Link to="/sign-up" className="font-semibold leading-6 text-blue-700 hover:underline">
+        <Link to="/sign-up" className="leading-6 font-semibold text-blue-700 hover:underline">
           Sign up
         </Link>
       </p>

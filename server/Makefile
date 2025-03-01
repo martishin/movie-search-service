@@ -4,6 +4,9 @@ run:
 run-postgres:
 	docker compose up postgres
 
+generate-sql:
+	sqlc generate
+
 test:
 	go test ./... -v
 
@@ -33,5 +36,3 @@ upload:
 
 deploy:
 	aws ecs update-service --cluster movie-search-cluster --service movie-search-server --force-new-deployment
-
-balancer:

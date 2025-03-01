@@ -22,15 +22,15 @@ export default function Header(): JSX.Element {
         {userDetails ? (
           <button
             onClick={handleLogout}
-            className="mb-2 rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-200"
+            className="min-w-[90px] rounded-md border border-gray-300 bg-white px-5 py-1.5 text-sm leading-6 font-semibold text-gray-900 hover:bg-gray-200"
           >
             Log Out
           </button>
         ) : (
           <Link to="/login">
-            <span className="mb-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800">
+            <button className="min-w-[90px] rounded-md bg-blue-600 px-5 py-1.5 text-sm leading-6 font-semibold text-white hover:bg-blue-800">
               Log In
-            </span>
+            </button>
           </Link>
         )}
       </div>

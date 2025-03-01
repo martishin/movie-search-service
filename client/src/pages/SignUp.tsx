@@ -79,7 +79,7 @@ export default function SignUp() {
   return (
     <div>
       <PageHeader title="Sign Up" />
-      <form className="ml-auto mr-auto mt-3 w-3/5 max-w-xs" onSubmit={handleSubmit}>
+      <form className="mt-3 mr-auto ml-auto w-3/5 max-w-xs" onSubmit={handleSubmit}>
         <LoginInput
           title="First Name"
           type="text"
@@ -134,7 +134,7 @@ export default function SignUp() {
           <input
             type="submit"
             disabled={loading}
-            className={`flex w-full justify-center rounded-md px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm ${
+            className={`flex w-full justify-center rounded-md px-3 py-1.5 text-sm leading-6 font-semibold text-white shadow-sm ${
               loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-800"
             } focus-visible:outline-2 focus-visible:outline-offset-2`}
             value={loading ? "Signing up..." : "Sign Up"}
@@ -148,7 +148,7 @@ export default function SignUp() {
 
       <p className="mt-4 text-center text-sm text-gray-500">
         Already a member?{" "}
-        <Link to="/login" className="font-semibold leading-6 text-blue-700 hover:underline">
+        <Link to="/login" className="leading-6 font-semibold text-blue-700 hover:underline">
           Log in
         </Link>
       </p>

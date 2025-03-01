@@ -1,17 +1,18 @@
-package server
+package route
 
 import (
 	"log/slog"
 	"net/http"
 
-	"github.com/martishin/movie-search-service/internal/handlers"
+	"github.com/markbates/goth/gothic"
+	"github.com/martishin/movie-search-service/internal/handler"
 	"github.com/martishin/movie-search-service/internal/middleware"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 )
 
-func registerRoutes(logger *slog.Logger) http.Handler {
+func RegisterRoutes(logger *slog.Logger, userHandler *handler.UserHandler, authHandler *handler.AuthHandler) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestIDMiddleware(logger))
 	r.Use(middleware.LoggingMiddleware())
@@ -25,10 +26,17 @@ func registerRoutes(logger *slog.Logger) http.Handler {
 	}))
 
 	// Root and health routes
-	r.Get("/", handlers.HelloWorldHandler())
+	r.Get("/", handler.HelloWorldHandler())
 
-	// // API routes (protected)
-	// r.With(middleware.AuthMiddleware).Get("/api/user", handlers.GetUserHandler(s.db))
+	// Authentication routes
+	r.Get("/auth", gothic.BeginAuthHandler)
+	r.Get("/auth/callback", authHandler.GoogleCallbackHandler())
+	r.Get("/auth/logout", authHandler.LogoutHandler())
+
+	// API routes (protected)
+	r.Route("/api", func(api chi.Router) {
+		api.With(middleware.AuthMiddleware).Get("/users/me", userHandler.GetUserHandler())
+	})
 
 	return r
 }

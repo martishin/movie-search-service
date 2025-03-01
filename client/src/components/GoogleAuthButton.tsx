@@ -10,10 +10,10 @@ export default function GoogleAuthButton({
   text = "Sign in with Google",
 }: GoogleSignInButtonProps): JSX.Element {
   return (
-    <div className="ml-auto mr-auto w-3/5 max-w-xs">
+    <div className="mr-auto ml-auto w-3/5 max-w-xs">
       <a
         href={href}
-        className="flex items-center justify-center gap-3 rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 w-full"
+        className="flex w-full items-center justify-center gap-3 rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50"
       >
         <svg viewBox="0 0 24 24" className="h-5 w-5">
           <path

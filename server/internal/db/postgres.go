@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/martishin/movie-search-service/internal/models/config"
+	"github.com/martishin/movie-search-service/internal/model/config"
 )
 
 func ConnectPostgresPool(config *config.PostgresConfig) (*pgxpool.Pool, error) {

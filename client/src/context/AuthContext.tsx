@@ -1,13 +1,15 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 
 interface UserDetails {
-  name: string;
+  id: number;
+  firstName: string;
+  lastName: string;
   email: string;
-  picture?: string;
+  pictureUrl?: string;
 }
 
 interface AuthContextType {
-  userDetails: UserDetails | null;
+  userDetails: UserDetails | null | undefined;
   setUserDetails: (user: UserDetails | null) => void;
   login: () => Promise<void>;
   logout: () => Promise<void>;
@@ -16,17 +18,18 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
+  const [userDetails, setUserDetails] = useState<UserDetails | null | undefined>(undefined);
+  const hasFetched = useRef(false);
 
   const fetchUserDetails = async () => {
     try {
-      const res = await fetch("/api/user", { credentials: "include" });
+      const res = await fetch("/api/users/me", { credentials: "include" });
 
       if (!res.ok) {
         throw new Error("Not authenticated");
       }
 
-      const userData = await res.json();
+      const userData: UserDetails = await res.json();
       setUserDetails(userData);
     } catch (err) {
       setUserDetails(null);
@@ -34,7 +37,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    fetchUserDetails();
+    if (!hasFetched.current) {
+      hasFetched.current = true;
+      fetchUserDetails();
+    }
   }, []);
 
   const login = async () => {

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -11,7 +12,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/martishin/movie-search-service/internal/adapters"
+	"github.com/martishin/movie-search-service/internal/adapter"
 	"github.com/martishin/movie-search-service/internal/db"
 	"github.com/martishin/movie-search-service/internal/server"
 )
@@ -45,7 +46,7 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	// Read Postgres config
-	postgresConfig, err := adapters.ReadPostgresConfig()
+	postgresConfig, err := adapter.ReadPostgresConfig()
 	if err != nil {
 		logger.Error("Failed to read postgres config", slog.Any("error", err))
 		os.Exit(1)
@@ -66,21 +67,22 @@ func main() {
 	logger.Info("Database migrations applied successfully")
 
 	// Read server config
-	serverConfig, err := adapters.ReadServerConfig()
+	serverConfig, err := adapter.ReadServerConfig()
 	if err != nil {
 		logger.Error("Failed to read server config", slog.Any("error", err))
 		os.Exit(1)
 	}
 
 	// Read OAuth config
-	oauthConfig, err := adapters.ReadGoogleOauthConfig()
+	oauthConfig, err := adapter.ReadGoogleOauthConfig()
 	if err != nil {
 		logger.Error("Failed to read Google OAuth config", slog.Any("error", err))
 		os.Exit(1)
 	}
+	fmt.Println(oauthConfig)
 
 	// Create the server
-	serv := server.NewServer(logger, serverConfig, oauthConfig)
+	serv := server.NewServer(logger, pool, serverConfig, oauthConfig)
 
 	// Create a done channel to signal when the shutdown is complete
 	done := make(chan struct{})
@@ -88,7 +90,7 @@ func main() {
 	// Run graceful shutdown in a separate goroutine
 	go gracefulShutdown(logger, serv, pool, done)
 
-	logger.Info("Starting server", slog.String("address", serv.Addr))
+	logger.Info("Starting server", slog.String("address", "http://localhost"+serv.Addr))
 	err = serv.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		logger.Error("HTTP server error", slog.Any("error", err))
