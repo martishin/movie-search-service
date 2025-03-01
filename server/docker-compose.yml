@@ -10,6 +10,11 @@ services:
         restart: on-failure
         environment:
             PORT: ${PORT}
+            POSTGRES_HOST: db
+            POSTGRES_PORT: ${POSTGRES_PORT}
+            POSTGRES_DATABASE: ${POSTGRES_DATABASE}
+            POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
             GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
             GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
             GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
@@ -19,3 +24,18 @@ services:
             SESSION_SECRET: ${SESSION_SECRET}
         ports:
             - "8100:8100"
+
+    postgres:
+        image: postgres:latest
+        restart: always
+        environment:
+            POSTGRES_USER: ${POSTGRES_USERNAME}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_DATABASE}
+        ports:
+            - '5432:5432'
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+
+volumes:
+    postgres_data:

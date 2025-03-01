@@ -1,6 +1,9 @@
 run:
 	go run cmd/api/main.go
 
+run-postgres:
+	docker compose up postgres
+
 test:
 	go test ./... -v
 

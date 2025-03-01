@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/martishin/movie-search-service/internal/models"
+	"github.com/martishin/movie-search-service/internal/models/config"
 
 	"github.com/gorilla/sessions"
 	"github.com/markbates/goth"
@@ -13,7 +13,7 @@ import (
 	"github.com/markbates/goth/providers/google"
 )
 
-func configureGoogleOauth(config *models.OAuthConfig) {
+func configureGoogleOauth(config *config.OAuthConfig) {
 	store := sessions.NewCookieStore([]byte(config.SessionSecret))
 
 	store.Options = &sessions.Options{
@@ -32,7 +32,7 @@ func configureGoogleOauth(config *models.OAuthConfig) {
 	)
 }
 
-func NewServer(logger *slog.Logger, serverConfig *models.ServerConfig, oauthConfig *models.OAuthConfig) *http.Server {
+func NewServer(logger *slog.Logger, serverConfig *config.ServerConfig, oauthConfig *config.OAuthConfig) *http.Server {
 	// Create Server instance
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", serverConfig.Port),
