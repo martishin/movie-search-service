@@ -1,5 +1,4 @@
-CREATE TABLE users
-(
+CREATE TABLE users (
     id          SERIAL PRIMARY KEY,
     first_name  VARCHAR(50)         NOT NULL,
     last_name   VARCHAR(50)         NOT NULL,
@@ -11,14 +10,15 @@ CREATE TABLE users
 );
 
 CREATE FUNCTION update_updated_at_column()
-    RETURNS TRIGGER AS $$
+    RETURNS TRIGGER
+AS $$
 BEGIN
     new.updated_at = CURRENT_TIMESTAMP;
     RETURN new;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER set_timestamp
+CREATE TRIGGER set_timestamp_users
     BEFORE UPDATE
     ON users
     FOR EACH ROW

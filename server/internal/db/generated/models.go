@@ -8,6 +8,31 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Genre struct {
+	ID        int32
+	Genre     string
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}
+
+type Movie struct {
+	ID          int32
+	Title       string
+	ReleaseDate pgtype.Date
+	Runtime     pgtype.Int4
+	MpaaRating  pgtype.Text
+	Description pgtype.Text
+	Image       pgtype.Text
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+}
+
+type MoviesGenre struct {
+	ID      int32
+	MovieID int32
+	GenreID int32
+}
+
 type User struct {
 	ID         int32
 	FirstName  string

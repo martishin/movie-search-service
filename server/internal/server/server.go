@@ -40,18 +40,28 @@ func configureGoogleOauth(config *config.OAuthConfig) {
 func NewServer(logger *slog.Logger, pool *pgxpool.Pool, serverConfig *config.ServerConfig, oauthConfig *config.OAuthConfig) *http.Server {
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(pool)
+	movieRepo := repository.NewMovieRepository(pool)
 
 	// Initialise services
 	userService := service.NewUserService(userRepo)
+	movieService := service.NewMovieService(movieRepo)
 
 	// Initialize handlers
 	userHandler := handler.NewUserHandler(userService)
 	authHandler := handler.NewAuthHandler(userService, oauthConfig)
+	movieHandler := handler.NewMovieHandler(movieService)
+
+	handlers := route.RegisterRoutes(
+		logger,
+		userHandler,
+		authHandler,
+		movieHandler,
+	)
 
 	// Create Server instance
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", serverConfig.Port),
-		Handler:      route.RegisterRoutes(logger, userHandler, authHandler),
+		Handler:      handlers,
 		IdleTimeout:  serverConfig.IdleTimeout,
 		ReadTimeout:  serverConfig.ReadTimeout,
 		WriteTimeout: serverConfig.WriteTimeout,

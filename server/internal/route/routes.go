@@ -12,7 +12,12 @@ import (
 	"github.com/go-chi/cors"
 )
 
-func RegisterRoutes(logger *slog.Logger, userHandler *handler.UserHandler, authHandler *handler.AuthHandler) http.Handler {
+func RegisterRoutes(
+	logger *slog.Logger,
+	userHandler *handler.UserHandler,
+	authHandler *handler.AuthHandler,
+	movieHandler *handler.MovieHandler,
+) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestIDMiddleware(logger))
 	r.Use(middleware.LoggingMiddleware())
@@ -40,6 +45,24 @@ func RegisterRoutes(logger *slog.Logger, userHandler *handler.UserHandler, authH
 	// API routes (protected)
 	r.Route("/api", func(api chi.Router) {
 		api.With(middleware.AuthMiddleware).Get("/users/me", userHandler.GetUserHandler())
+
+		// Movie endpoints
+		api.Get("/movies", movieHandler.ListMoviesHandler())
+		api.Get("/movies/{id}", movieHandler.GetMovieHandler())
+		api.Post("/movies", movieHandler.CreateMovieHandler())
+		api.Get("/movies/genres/{id}", movieHandler.ListMoviesByGenreHandler())
+		api.Get("/genres", movieHandler.ListGenresHandler())
+
+		// Admin endpoints
+		api.Route("/admin", func(admin chi.Router) {
+			admin.Use(middleware.AuthMiddleware)
+
+			admin.Get("/movies", movieHandler.ListMoviesHandler())
+			admin.Get("/movies/{id}", movieHandler.GetMovieHandler())
+			admin.Post("/movies", movieHandler.CreateMovieHandler())
+			admin.Put("/movies/{id}", movieHandler.UpdateMovieHandler())
+			admin.Delete("/movies/{id}", movieHandler.DeleteMovieHandler())
+		})
 	})
 
 	return r
