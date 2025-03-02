@@ -9,7 +9,7 @@ export default function ErrorPage(): JSX.Element {
 
   return (
     <div className="flex h-screen justify-center bg-[#F4F4F4]">
-      <div className="flex h-full w-full max-w-screen-lg flex-col bg-white shadow-md">
+      <div className="flex h-full w-full max-w-screen-xl flex-col bg-white shadow-md">
         <Header />
         <div className="mx-auto w-full border-t border-gray-200" />
         <div className="flex flex-1 overflow-hidden">

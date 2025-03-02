@@ -37,7 +37,7 @@ export default function Navigation({ isMobile, closeMenu }: NavigationProps): JS
   return (
     <nav
       className={`bg-white p-4 ${
-        isMobile ? "w-full" : "min-h-screen w-48 border-r border-gray-200"
+        isMobile ? "w-full" : "min-h-screen w-54 border-r border-gray-200"
       }`}
     >
       <ul className="space-y-1">

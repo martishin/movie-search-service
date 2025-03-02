@@ -21,7 +21,7 @@ export default function Header(): JSX.Element {
 
   return (
     <header className="bg-white">
-      <div className="mx-auto flex max-w-screen-lg items-center justify-between p-4">
+      <div className="mx-auto flex items-center justify-between p-4">
         <div className="flex items-center space-x-3">
           <button
             className="p-2 md:hidden"
