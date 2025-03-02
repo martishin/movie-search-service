@@ -18,12 +18,13 @@ func NewUserRepository(pool *pgxpool.Pool) *UserRepository {
 	}
 }
 
-func (r *UserRepository) CreateUser(ctx context.Context, firstName, lastName, email, pictureURL string) (db.User, error) {
+func (r *UserRepository) CreateUser(ctx context.Context, firstName, lastName, email, pictureURL string, password string) (db.User, error) {
 	params := db.CreateUserParams{
 		FirstName:  firstName,
 		LastName:   lastName,
 		Email:      email,
 		PictureUrl: pgtype.Text{String: pictureURL, Valid: true},
+		Password:   pgtype.Text{String: password, Valid: password != ""},
 	}
 	return r.queries.CreateUser(ctx, params)
 }

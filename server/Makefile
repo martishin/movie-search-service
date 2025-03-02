@@ -4,6 +4,9 @@ run:
 run-postgres:
 	docker compose up postgres
 
+stop-postgres:
+	docker compose down postgres
+
 generate-sql:
 	sqlc generate
 

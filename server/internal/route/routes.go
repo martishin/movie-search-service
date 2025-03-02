@@ -29,9 +29,13 @@ func RegisterRoutes(logger *slog.Logger, userHandler *handler.UserHandler, authH
 	r.Get("/", handler.HelloWorldHandler())
 
 	// Authentication routes
-	r.Get("/auth", gothic.BeginAuthHandler)
-	r.Get("/auth/callback", authHandler.GoogleCallbackHandler())
-	r.Get("/auth/logout", authHandler.LogoutHandler())
+	r.Route("/auth", func(api chi.Router) {
+		api.Get("/start", gothic.BeginAuthHandler)
+		api.Get("/callback", authHandler.GoogleCallbackHandler())
+		api.Get("/logout", authHandler.LogoutHandler())
+		api.Post("/signup", authHandler.SignUpHandler())
+		api.Post("/login", authHandler.LoginHandler())
+	})
 
 	// API routes (protected)
 	r.Route("/api", func(api chi.Router) {

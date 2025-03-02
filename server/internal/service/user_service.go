@@ -17,12 +17,12 @@ func NewUserService(userRepo *repository.UserRepository) *UserService {
 	return &UserService{userRepo: userRepo}
 }
 
-func (s *UserService) CreateUser(ctx context.Context, firstName, lastName, email, pictureURL string) (domain.User, error) {
+func (s *UserService) CreateUser(ctx context.Context, firstName, lastName, email, pictureURL string, password string) (domain.User, error) {
 	if email == "" {
 		return domain.User{}, errors.New("email cannot be empty")
 	}
 
-	dbUser, err := s.userRepo.CreateUser(ctx, firstName, lastName, email, pictureURL)
+	dbUser, err := s.userRepo.CreateUser(ctx, firstName, lastName, email, pictureURL, password)
 	if err != nil {
 		return domain.User{}, err
 	}
@@ -30,13 +30,13 @@ func (s *UserService) CreateUser(ctx context.Context, firstName, lastName, email
 	return mapDBUserToDomainUser(dbUser), nil
 }
 
-func (s *UserService) FindOrCreateUser(ctx context.Context, firstName, lastName, email, pictureURL string) (domain.User, error) {
+func (s *UserService) FindOrCreateUser(ctx context.Context, firstName, lastName, email, pictureURL string, password string) (domain.User, error) {
 	dbUser, err := s.userRepo.GetUserByEmail(ctx, email)
 	if err == nil {
 		return mapDBUserToDomainUser(dbUser), nil
 	}
 
-	createdUser, err := s.userRepo.CreateUser(ctx, firstName, lastName, email, pictureURL)
+	createdUser, err := s.userRepo.CreateUser(ctx, firstName, lastName, email, pictureURL, password)
 	if err != nil {
 		return domain.User{}, err
 	}
@@ -58,6 +58,14 @@ func (s *UserService) GetUserByEmail(ctx context.Context, email string) (domain.
 		return domain.User{}, err
 	}
 	return mapDBUserToDomainUser(dbUser), nil
+}
+
+func (s *UserService) GetUserIDAndPasswordByEmail(ctx context.Context, email string) (int, string, error) {
+	dbUser, err := s.userRepo.GetUserByEmail(ctx, email)
+	if err != nil {
+		return 0, "", err
+	}
+	return int(dbUser.ID), dbUser.Password.String, nil
 }
 
 func (s *UserService) ListUsers(ctx context.Context) ([]domain.User, error) {

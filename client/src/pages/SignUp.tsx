@@ -36,31 +36,25 @@ export default function SignUp() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
 
     try {
-      const res = await fetch("/api/signup", {
+      const res = await fetch("/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
           first_name: firstName,
           last_name: lastName,
-          email: email,
+          email,
           password: password1,
         }),
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Sign up failed. Please try again.");
-      }
+      if (!res.ok) throw new Error(data.error || "Sign up failed");
 
       await login();
       navigate("/");
@@ -141,7 +135,7 @@ export default function SignUp() {
       </form>
 
       <div className="mt-4">
-        <GoogleAuthButton href="/auth?provider=google" text="Sign up with Google" />
+        <GoogleAuthButton href="/auth/start?provider=google" text="Sign up with Google" />
       </div>
 
       <p className="mt-4 text-center text-sm text-gray-500">

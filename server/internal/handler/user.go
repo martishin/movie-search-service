@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/markbates/goth/gothic"
+	"github.com/martishin/movie-search-service/internal/adapter"
 	"github.com/martishin/movie-search-service/internal/service"
 )
 
@@ -22,21 +23,21 @@ func (h *UserHandler) GetUserHandler() http.HandlerFunc {
 		// Retrieve user ID from session
 		userIDStr, err := gothic.GetFromSession("user_id", r)
 		if err != nil || userIDStr == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			adapter.JsonErrorResponse(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
 		// Convert userID from string to int
 		userID, err := strconv.Atoi(userIDStr)
 		if err != nil {
-			http.Error(w, "Invalid user ID", http.StatusBadRequest)
+			adapter.JsonErrorResponse(w, "Invalid user ID", http.StatusBadRequest)
 			return
 		}
 
 		// Fetch user from service
 		user, err := h.userService.GetUserByID(r.Context(), userID)
 		if err != nil {
-			http.Error(w, "User not found", http.StatusNotFound)
+			adapter.JsonErrorResponse(w, "User not found", http.StatusNotFound)
 			return
 		}
 

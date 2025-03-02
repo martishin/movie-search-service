@@ -1,4 +1,4 @@
-import { JSX, useState, useEffect } from "react";
+import { JSX, useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
@@ -8,10 +8,26 @@ export default function Header(): JSX.Element {
   const { userDetails, logout } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
   // Prevent scrolling when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = isMenuOpen ? "hidden" : "auto";
+
+    // Click outside to close menu
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isMenuOpen]);
 
   const handleLogout = async () => {
@@ -59,19 +75,21 @@ export default function Header(): JSX.Element {
         </div>
       </div>
 
-      <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-white shadow-lg transition-transform duration-300 ease-in-out md:hidden ${
-          isMenuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex justify-end p-4">
-          <button onClick={() => setIsMenuOpen(false)} aria-label="Close menu">
-            <XMarkIcon className="h-6 w-6 text-gray-900" />
-          </button>
-        </div>
+      {/* Mobile Navigation */}
+      {isMenuOpen && (
+        <div
+          ref={menuRef}
+          className="fixed inset-y-0 left-0 z-50 w-64 transform bg-white shadow-lg transition-transform duration-300 ease-in-out md:hidden"
+        >
+          <div className="flex justify-end p-4">
+            <button onClick={() => setIsMenuOpen(false)} aria-label="Close menu">
+              <XMarkIcon className="h-6 w-6 text-gray-900" />
+            </button>
+          </div>
 
-        <Navigation isMobile closeMenu={() => setIsMenuOpen(false)} />
-      </div>
+          <Navigation isMobile closeMenu={() => setIsMenuOpen(false)} />
+        </div>
+      )}
     </header>
   );
 }

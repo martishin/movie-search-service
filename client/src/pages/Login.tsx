@@ -23,15 +23,12 @@ export default function Login() {
     if (!password) newErrors.password = "Password is required";
 
     setErrors(newErrors);
-
-    if (Object.keys(newErrors).length > 0) {
-      return;
-    }
+    if (Object.keys(newErrors).length > 0) return;
 
     setLoading(true);
 
     try {
-      const res = await fetch("/api/login", {
+      const res = await fetch("/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -39,10 +36,7 @@ export default function Login() {
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Invalid credentials");
-      }
+      if (!res.ok) throw new Error(data.error || "Invalid credentials");
 
       await login();
       navigate("/");
@@ -91,7 +85,7 @@ export default function Login() {
       </form>
 
       <div className="mt-4">
-        <GoogleAuthButton href="/auth?provider=google" text="Log in with Google" />
+        <GoogleAuthButton href="/auth/start?provider=google" text="Log in with Google" />
       </div>
 
       <p className="mt-4 text-center text-sm text-gray-500">

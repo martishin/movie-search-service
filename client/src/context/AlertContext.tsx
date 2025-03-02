@@ -22,7 +22,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
       setTimeout(() => {
         setIsVisible(false);
       }, 500);
-    }, 3000);
+    }, 5000);
   };
 
   return (

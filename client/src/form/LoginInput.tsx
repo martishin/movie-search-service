@@ -30,7 +30,7 @@ const LoginInput = forwardRef<HTMLInputElement, LoginInputProps>((props, ref) =>
           autoComplete={autoComplete}
           className={`block w-full rounded-md border-0 px-3 py-1.5 text-gray-900 ring-1 ring-inset ${
             hasError ? "ring-red-600" : "ring-gray-300"
-          } placeholder:text-gray-400 focus:ring-2 focus:ring-blue-600 focus:ring-inset`}
+          } placeholder:text-gray-400 focus:ring-gray-300 focus:outline-none`}
           ref={ref}
           onChange={onChange}
           aria-invalid={hasError ? "true" : "false"}

@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/martishin/movie-search-service/internal/adapter"
 	"github.com/martishin/movie-search-service/internal/middleware"
 )
 
@@ -17,7 +18,7 @@ func HelloWorldHandler() http.HandlerFunc {
 		jsonResp, err := json.Marshal(resp)
 		if err != nil {
 			logger.Error("error handling JSON marshal", slog.Any("error", err))
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			adapter.JsonErrorResponse(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 
