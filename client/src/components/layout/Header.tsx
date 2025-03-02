@@ -31,7 +31,7 @@ export default function Header(): JSX.Element {
             <Bars3Icon className="h-6 w-6 text-gray-900" />
           </button>
 
-          <Link to="/" className="text-2xl font-bold tracking-tight">
+          <Link to="/" className="text-2xl font-bold tracking-normal">
             MovieSearch
           </Link>
         </div>

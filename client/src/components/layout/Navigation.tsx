@@ -37,7 +37,7 @@ export default function Navigation({ isMobile, closeMenu }: NavigationProps): JS
   return (
     <nav
       className={`bg-white p-4 ${
-        isMobile ? "w-full" : "min-h-screen w-48 border-r border-gray-300"
+        isMobile ? "w-full" : "min-h-screen w-48 border-r border-gray-200"
       }`}
     >
       <ul className="space-y-1">
@@ -47,7 +47,7 @@ export default function Navigation({ isMobile, closeMenu }: NavigationProps): JS
               to={path}
               onClick={closeMenu}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-2 py-2 text-sm font-medium transition ${
+                `flex items-center gap-3 px-2 py-2 font-medium transition ${
                   isActive
                     ? "border-b-2 border-blue-700 text-blue-700"
                     : "border-b-2 border-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900"

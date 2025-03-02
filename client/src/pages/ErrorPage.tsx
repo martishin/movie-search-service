@@ -11,9 +11,9 @@ export default function ErrorPage(): JSX.Element {
     <div className="flex h-screen justify-center bg-[#F4F4F4]">
       <div className="flex h-full w-full max-w-screen-lg flex-col bg-white shadow-md">
         <Header />
-        <div className="mx-auto w-full border-t border-gray-300" />
+        <div className="mx-auto w-full border-t border-gray-200" />
         <div className="flex flex-1 overflow-hidden">
-          <div className="hidden h-full border-r border-gray-300 md:block md:w-48">
+          <div className="hidden h-full md:block md:w-48">
             <Navigation />
           </div>
 
