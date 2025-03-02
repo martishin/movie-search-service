@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import LoginInput from "../form/LoginInput";
-import PageHeader from "../components/layout/PageHeader";
 import { useAuth } from "../context/AuthContext";
 import { useAlert } from "../context/AlertContext";
 import GoogleAuthButton from "../components/GoogleAuthButton";
@@ -19,7 +18,6 @@ export default function Login() {
   const handleEmailLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Validate form fields
     const newErrors: { email?: string; password?: string } = {};
     if (!email) newErrors.email = "Email is required";
     if (!password) newErrors.password = "Password is required";
@@ -61,7 +59,6 @@ export default function Login() {
 
   return (
     <div>
-      <PageHeader title="Login" />
       <form className="mt-3 mr-auto ml-auto w-3/5 max-w-xs" onSubmit={handleEmailLogin}>
         <LoginInput
           title="Email Address"

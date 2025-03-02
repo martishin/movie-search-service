@@ -1,44 +1,65 @@
 import { NavLink } from "react-router";
 import { JSX } from "react";
 import { useAuth } from "../../context/AuthContext";
+import {
+  FilmIcon,
+  HomeIcon,
+  PencilSquareIcon,
+  PlusCircleIcon,
+  TicketIcon,
+} from "@heroicons/react/24/outline";
 
-export default function Navigation(): JSX.Element {
+interface NavigationProps {
+  isMobile?: boolean;
+  closeMenu?: () => void;
+}
+
+export default function Navigation({ isMobile, closeMenu }: NavigationProps): JSX.Element {
   const { userDetails } = useAuth();
 
   const commonLinks = [
-    ["Home", "/"],
-    ["Movies", "/movies"],
-    ["Genres", "/genres"],
-    ["GraphQL", "/graphql"],
+    { title: "Home", path: "/", icon: <HomeIcon className="h-5 w-5" /> },
+    { title: "Movies", path: "/movies", icon: <FilmIcon className="h-5 w-5" /> },
+    { title: "Genres", path: "/genres", icon: <TicketIcon className="h-5 w-5" /> },
   ];
 
   const loggedInLinks = [
-    ["Add a Movie", "/admin/movie/0"],
-    ["Manage Catalogue", "/manage-catalogue"],
+    {
+      title: "Manage Catalogue",
+      path: "/manage-catalogue",
+      icon: <PencilSquareIcon className="h-5 w-5" />,
+    },
+    { title: "Add a Movie", path: "/admin/movie/0", icon: <PlusCircleIcon className="h-5 w-5" /> },
   ];
 
   const links = userDetails ? [...commonLinks, ...loggedInLinks] : commonLinks;
 
   return (
-    <div className="mr-4 ml-4">
-      <nav aria-label="Main navigation">
-        <ul className="border-x border-t border-gray-200 bg-white text-gray-900">
-          {links.map(([title, path]) => (
-            <li key={title}>
-              <NavLink
-                to={path}
-                className={({ isActive }) =>
-                  `block border-b border-gray-200 px-4 py-2 text-sm font-medium ${
-                    isActive ? "bg-blue-50 text-blue-700" : "hover:bg-gray-100 hover:text-blue-700"
-                  }`
-                }
-              >
-                {title}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </div>
+    <nav
+      className={`bg-white p-4 ${
+        isMobile ? "w-full" : "min-h-screen w-48 border-r border-gray-300"
+      }`}
+    >
+      <ul className="space-y-1">
+        {links.map(({ title, path, icon }) => (
+          <li key={title}>
+            <NavLink
+              to={path}
+              onClick={closeMenu}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-2 py-2 text-sm font-medium transition ${
+                  isActive
+                    ? "border-b-2 border-blue-700 text-blue-700"
+                    : "border-b-2 border-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                }`
+              }
+            >
+              {icon}
+              {title}
+            </NavLink>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 }

@@ -34,7 +34,7 @@ func (h *AuthHandler) GoogleCallbackHandler() http.HandlerFunc {
 
 		// Save user to database
 		ctx := r.Context()
-		user, err := h.userService.FindOrCreateUser(ctx, authUser.Name, authUser.Email, authUser.AvatarURL)
+		user, err := h.userService.FindOrCreateUser(ctx, authUser.FirstName, authUser.LastName, authUser.Email, authUser.AvatarURL)
 		if err != nil {
 			logger.Error("Failed to find or create user", slog.Any("error", err), slog.String("email", authUser.Email))
 			http.Error(w, "Database error", http.StatusInternalServerError)

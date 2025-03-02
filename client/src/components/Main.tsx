@@ -14,6 +14,7 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { index: true, element: <Home /> },
+      { path: "/movies", element: <Home /> },
       { path: "/login", element: <Login /> },
       { path: "/sign-up", element: <SignUp /> },
     ],
@@ -24,7 +25,9 @@ export default function Main() {
   return (
     <AuthProvider>
       <AlertProvider>
-        <RouterProvider router={router} />
+        <div className="min-h-screen bg-[#F4F4F4]">
+          <RouterProvider router={router} />
+        </div>
       </AlertProvider>
     </AuthProvider>
   );

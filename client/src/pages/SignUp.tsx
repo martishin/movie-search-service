@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import LoginInput from "../form/LoginInput";
-import PageHeader from "../components/layout/PageHeader";
 import { useAuth } from "../context/AuthContext";
 import { useAlert } from "../context/AlertContext";
 import GoogleAuthButton from "../components/GoogleAuthButton";
@@ -78,7 +77,6 @@ export default function SignUp() {
 
   return (
     <div>
-      <PageHeader title="Sign Up" />
       <form className="mt-3 mr-auto ml-auto w-3/5 max-w-xs" onSubmit={handleSubmit}>
         <LoginInput
           title="First Name"

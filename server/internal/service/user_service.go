@@ -30,13 +30,13 @@ func (s *UserService) CreateUser(ctx context.Context, firstName, lastName, email
 	return mapDBUserToDomainUser(dbUser), nil
 }
 
-func (s *UserService) FindOrCreateUser(ctx context.Context, name, email, pictureURL string) (domain.User, error) {
+func (s *UserService) FindOrCreateUser(ctx context.Context, firstName, lastName, email, pictureURL string) (domain.User, error) {
 	dbUser, err := s.userRepo.GetUserByEmail(ctx, email)
 	if err == nil {
 		return mapDBUserToDomainUser(dbUser), nil
 	}
 
-	createdUser, err := s.userRepo.CreateUser(ctx, name, "", email, pictureURL)
+	createdUser, err := s.userRepo.CreateUser(ctx, firstName, lastName, email, pictureURL)
 	if err != nil {
 		return domain.User{}, err
 	}

@@ -12,14 +12,18 @@ export default function App(): JSX.Element | null {
   }
 
   return (
-    <div className="container mx-auto mt-8 max-w-screen-lg">
-      <Header />
-      <div className="mt-4 flex">
-        <div className="w-48">
-          <Navigation />
-        </div>
-        <div className="mr-4 ml-4 w-min flex-grow">
-          <Outlet />
+    <div className="flex h-screen justify-center bg-[#F4F4F4]">
+      <div className="flex h-full w-full max-w-screen-lg flex-col bg-white shadow-md">
+        <Header />
+        <div className="mx-auto w-full border-t border-gray-300" />
+        <div className="flex flex-1 overflow-hidden">
+          <div className="hidden h-full border-r border-gray-300 md:block md:w-48">
+            <Navigation />
+          </div>
+
+          <div className="flex-grow overflow-auto p-4">
+            <Outlet />
+          </div>
         </div>
       </div>
     </div>
