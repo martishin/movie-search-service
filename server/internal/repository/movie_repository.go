@@ -92,3 +92,7 @@ func (r *MovieRepository) ListMoviesByGenre(ctx context.Context, genreID int) ([
 func (r *MovieRepository) ListGenres(ctx context.Context) ([]db.Genre, error) {
 	return r.queries.ListGenres(ctx)
 }
+
+func (r *MovieRepository) ListMoviesWithGenres(ctx context.Context) ([]db.ListMoviesWithGenresRow, error) {
+	return r.queries.ListMoviesWithGenres(ctx)
+}

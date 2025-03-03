@@ -17,6 +17,25 @@ FROM
 ORDER BY
     id;
 
+-- name: ListMoviesWithGenres :many
+SELECT
+    m.id AS movie_id,
+    m.title,
+    m.release_date,
+    m.runtime,
+    m.mpaa_rating,
+    m.description,
+    m.image,
+    m.user_rating,
+    g.id AS genre_id,
+    g.genre
+FROM
+    movies m
+        LEFT JOIN movies_genres mg ON m.id = mg.movie_id
+        LEFT JOIN genres g ON mg.genre_id = g.id
+ORDER BY
+    m.title;
+
 -- name: UpdateMovie :exec
 UPDATE movies
 SET title        = $2,
@@ -41,7 +60,7 @@ SELECT
     g.genre
 FROM
     movies_genres mg
-    JOIN genres g ON mg.genre_id = g.id
+        JOIN genres g ON mg.genre_id = g.id
 WHERE
     mg.movie_id = $1;
 
@@ -61,7 +80,7 @@ SELECT
     m.*
 FROM
     movies m
-    JOIN movies_genres mg ON m.id = mg.movie_id
+        JOIN movies_genres mg ON m.id = mg.movie_id
 WHERE
     mg.genre_id = $1
 ORDER BY

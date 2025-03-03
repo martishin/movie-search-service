@@ -75,7 +75,7 @@ func (h *MovieHandler) ListMoviesHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logger := middleware.GetLogger(r.Context())
 
-		movies, err := h.movieService.ListMovies(r.Context())
+		movies, err := h.movieService.ListMoviesWithGenres(r.Context())
 		if err != nil {
 			logger.Error("Failed to fetch movies", slog.Any("error", err))
 			adapter.JsonErrorResponse(w, "Could not fetch movies", http.StatusInternalServerError)

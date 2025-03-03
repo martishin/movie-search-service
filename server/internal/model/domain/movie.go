@@ -11,4 +11,5 @@ type Movie struct {
 	Description string    `json:"description"`
 	Image       string    `json:"image"`
 	Genres      []*Genre  `json:"genres,omitempty"`
+	UserRating  float64   `json:"user_rating"`
 }

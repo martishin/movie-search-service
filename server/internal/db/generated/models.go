@@ -25,6 +25,7 @@ type Movie struct {
 	Image       pgtype.Text
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
+	UserRating  pgtype.Numeric
 }
 
 type MoviesGenre struct {

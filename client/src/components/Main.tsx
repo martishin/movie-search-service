@@ -6,6 +6,7 @@ import { AlertProvider } from "../context/AlertContext";
 import { AuthProvider } from "../context/AuthContext";
 import Login from "../pages/Login";
 import SignUp from "../pages/SignUp";
+import Movies from "../pages/Movies";
 
 const router = createBrowserRouter([
   {
@@ -14,7 +15,7 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { index: true, element: <Home /> },
-      { path: "/movies", element: <Home /> },
+      { path: "/movies", element: <Movies /> },
       { path: "/login", element: <Login /> },
       { path: "/sign-up", element: <SignUp /> },
     ],
