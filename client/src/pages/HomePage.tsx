@@ -2,7 +2,7 @@ import { JSX } from "react";
 import { Link } from "react-router";
 import ticketLogo from "../assets/movie_tickets.jpg";
 
-export default function Home(): JSX.Element {
+export default function HomePage(): JSX.Element {
   return (
     <div className="text-center">
       <Link to="/movies">

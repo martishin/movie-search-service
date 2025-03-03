@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useAlert } from "../context/AlertContext";
 import GoogleAuthButton from "../components/GoogleAuthButton";
 
-export default function Login() {
+export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});

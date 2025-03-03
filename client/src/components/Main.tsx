@@ -1,12 +1,13 @@
 import { createBrowserRouter, RouterProvider } from "react-router";
 import App from "./App";
 import ErrorPage from "../pages/ErrorPage";
-import Home from "../pages/Home";
+import HomePage from "../pages/HomePage";
 import { AlertProvider } from "../context/AlertContext";
 import { AuthProvider } from "../context/AuthContext";
-import Login from "../pages/Login";
-import SignUp from "../pages/SignUp";
-import Movies from "../pages/Movies";
+import LoginPage from "../pages/LoginPage";
+import SignUpPage from "../pages/SignUpPage";
+import MoviesPage from "../pages/MoviesPage";
+import MoviePage from "../pages/MoviePage";
 
 const router = createBrowserRouter([
   {
@@ -14,10 +15,11 @@ const router = createBrowserRouter([
     element: <App />,
     errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <Home /> },
-      { path: "/movies", element: <Movies /> },
-      { path: "/login", element: <Login /> },
-      { path: "/sign-up", element: <SignUp /> },
+      { index: true, element: <HomePage /> },
+      { path: "/login", element: <LoginPage /> },
+      { path: "/sign-up", element: <SignUpPage /> },
+      { path: "/movies", element: <MoviesPage /> },
+      { path: "/movies/:id", element: <MoviePage /> },
     ],
   },
 ]);

@@ -1,3 +1,5 @@
+import Genre from "./Genre";
+
 export default interface Movie {
   id: number;
   title: string;
@@ -6,6 +8,6 @@ export default interface Movie {
   mpaa_rating: string;
   description: string;
   image: string;
-  genres: { id: number; genre: string }[];
+  genres: Genre[];
   user_rating: number;
 }

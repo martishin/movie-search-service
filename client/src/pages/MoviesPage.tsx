@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { FaStar, FaRegStar, FaStarHalfStroke } from "react-icons/fa6";
 import { useAlert } from "../context/AlertContext";
 import Movie from "../models/Movie";
 import { FaSortAmountDown, FaSortAmountUp } from "react-icons/fa";
+import Genre from "../models/Genre";
+import GenreTag from "../components/GenreTag";
+import UserRatingStar from "../components/UserRatingStar";
 
-export default function Movies() {
+export default function MoviesPage() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [filteredMovies, setFilteredMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,73 +81,16 @@ export default function Movies() {
     setFilteredMovies(filtered);
   };
 
-  // Genre Colors (Consistent based on ID)
-  const genreColors = [
-    "bg-blue-200 text-blue-800",
-    "bg-green-200 text-green-800",
-    "bg-yellow-200 text-yellow-800",
-    "bg-red-200 text-red-800",
-    "bg-purple-200 text-purple-800",
-    "bg-pink-200 text-pink-800",
-    "bg-indigo-200 text-indigo-800",
-    "bg-orange-200 text-orange-800",
-    "bg-teal-200 text-teal-800",
-    "bg-lime-200 text-lime-800",
-    "bg-cyan-200 text-cyan-800",
-    "bg-amber-200 text-amber-800",
-    "bg-emerald-200 text-emerald-800",
-    "bg-violet-200 text-violet-800",
-    "bg-rose-200 text-rose-800",
-    "bg-sky-200 text-sky-800",
-    "bg-fuchsia-200 text-fuchsia-800",
-    "bg-gray-200 text-gray-800",
-    "bg-stone-200 text-stone-800",
-    "bg-zinc-200 text-zinc-800",
-    "bg-neutral-200 text-neutral-800",
-  ];
-
-  const getGenreColor = (genreId: number) => {
-    return genreColors[genreId % genreColors.length]; // Assign color consistently
-  };
-
   const renderSortIcon = (field: "title" | "release_date" | "mpaa_rating" | "user_rating") => (
     <span className="inline-block w-4">
       {sortField === field && (sortDirection === "asc" ? <FaSortAmountUp /> : <FaSortAmountDown />)}
     </span>
   );
 
-  const renderStars = (rating: number) => {
-    let fullStars = Math.ceil(rating);
-    let hasHalfStar = false;
-    let emptyStars = 5 - fullStars;
-
-    if (fullStars - rating >= 0.5) {
-      fullStars -= 1;
-      hasHalfStar = true;
-    }
-
-    return (
-      <div className="flex">
-        {Array.from({ length: fullStars }).map((_, i) => (
-          <FaStar key={`full-${i}`} className="text-yellow-500" />
-        ))}
-        {hasHalfStar && <FaStarHalfStroke key="half" className="text-yellow-500" />}
-        {Array.from({ length: emptyStars }).map((_, i) => (
-          <FaRegStar key={`empty-${i}`} className="text-yellow-500" />
-        ))}
-      </div>
-    );
-  };
-
-  const renderGenres = (genres: { id: number; genre: string }[]) => (
+  const renderGenres = (genres: Genre[]) => (
     <div className="flex flex-wrap gap-1">
       {genres.map((genre) => (
-        <span
-          key={genre.id}
-          className={`rounded-full px-2 py-1 text-xs font-medium ${getGenreColor(genre.id)}`}
-        >
-          {genre.genre}
-        </span>
+        <GenreTag key={genre.id} genre={genre} />
       ))}
     </div>
   );
@@ -201,15 +146,6 @@ export default function Movies() {
                 </th>
                 <th
                   scope="col"
-                  className="w-1/5 cursor-pointer px-3 py-3"
-                  onClick={() => handleSort("release_date")}
-                >
-                  <div className="flex items-center gap-2">
-                    Release Date {renderSortIcon("release_date")}
-                  </div>
-                </th>
-                <th
-                  scope="col"
                   className="w-1/6 cursor-pointer px-3 py-3"
                   onClick={() => handleSort("user_rating")}
                 >
@@ -222,12 +158,15 @@ export default function Movies() {
                 </th>
                 <th
                   scope="col"
-                  className="w-1/12 cursor-pointer px-3 py-3"
-                  onClick={() => handleSort("mpaa_rating")}
+                  className="w-1/5 cursor-pointer px-3 py-3"
+                  onClick={() => handleSort("release_date")}
                 >
                   <div className="flex items-center gap-2">
-                    MPA Rating {renderSortIcon("mpaa_rating")}
+                    Release Date {renderSortIcon("release_date")}
                   </div>
+                </th>
+                <th scope="col" className="w-1/12 px-3 py-3">
+                  MPA Rating
                 </th>
               </tr>
             </thead>
@@ -248,9 +187,11 @@ export default function Movies() {
                       {movie.title}
                     </Link>
                   </td>
-                  <td className="px-3 py-3 whitespace-nowrap">{movie.release_date}</td>
-                  <td className="px-3 py-3 whitespace-nowrap">{renderStars(movie.user_rating)}</td>
+                  <td className="px-3 py-3 whitespace-nowrap">
+                    <UserRatingStar rating={movie.user_rating} />
+                  </td>
                   <td className="px-3 py-3 whitespace-nowrap">{renderGenres(movie.genres)}</td>
+                  <td className="px-3 py-3 whitespace-nowrap">{movie.release_date}</td>
                   <td className="px-3 py-3 whitespace-nowrap">{movie.mpaa_rating}</td>
                 </tr>
               ))}
