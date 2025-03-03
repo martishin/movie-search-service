@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { FaSortUp, FaSortDown, FaStar, FaRegStar, FaStarHalfStroke } from "react-icons/fa6";
+import { FaStar, FaRegStar, FaStarHalfStroke } from "react-icons/fa6";
 import { useAlert } from "../context/AlertContext";
 import Movie from "../models/Movie";
+import { FaSortAmountDown, FaSortAmountUp } from "react-icons/fa";
 
 export default function Movies() {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -10,9 +11,9 @@ export default function Movies() {
   const [isLoading, setIsLoading] = useState(true);
   const { showAlert } = useAlert();
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortField, setSortField] = useState<"title" | "release_date" | "mpaa_rating" | "rating">(
-    "title",
-  );
+  const [sortField, setSortField] = useState<
+    "title" | "release_date" | "mpaa_rating" | "user_rating"
+  >("title");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
@@ -39,12 +40,12 @@ export default function Movies() {
       .finally(() => setIsLoading(false));
   }, [showAlert]);
 
-  const handleSort = (field: "title" | "release_date" | "mpaa_rating" | "rating") => {
+  const handleSort = (field: "title" | "release_date" | "mpaa_rating" | "user_rating") => {
     if (field === sortField) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
-      setSortDirection("asc");
+      setSortDirection("desc");
     }
   };
 
@@ -55,7 +56,7 @@ export default function Movies() {
         : new Date(b.release_date).getTime() - new Date(a.release_date).getTime();
     }
 
-    if (sortField === "rating") {
+    if (sortField === "user_rating") {
       return sortDirection === "asc"
         ? a.user_rating - b.user_rating
         : b.user_rating - a.user_rating;
@@ -107,9 +108,9 @@ export default function Movies() {
     return genreColors[genreId % genreColors.length]; // Assign color consistently
   };
 
-  const renderSortIcon = (field: "title" | "release_date" | "mpaa_rating" | "rating") => (
-    <span className="inline-block w-4 text-gray-500">
-      {sortField === field && (sortDirection === "asc" ? <FaSortUp /> : <FaSortDown />)}
+  const renderSortIcon = (field: "title" | "release_date" | "mpaa_rating" | "user_rating") => (
+    <span className="inline-block w-4">
+      {sortField === field && (sortDirection === "asc" ? <FaSortAmountUp /> : <FaSortAmountDown />)}
     </span>
   );
 
@@ -196,19 +197,25 @@ export default function Movies() {
                   className="w-2/5 cursor-pointer px-3 py-3"
                   onClick={() => handleSort("title")}
                 >
-                  <div className="flex items-center">Movie {renderSortIcon("title")}</div>
+                  <div className="flex items-center gap-2">Movie {renderSortIcon("title")}</div>
                 </th>
                 <th
                   scope="col"
                   className="w-1/5 cursor-pointer px-3 py-3"
                   onClick={() => handleSort("release_date")}
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center gap-2">
                     Release Date {renderSortIcon("release_date")}
                   </div>
                 </th>
-                <th scope="col" className="w-1/6 cursor-pointer px-3 py-3">
-                  <div className="flex items-center">User Rating {renderSortIcon("rating")}</div>
+                <th
+                  scope="col"
+                  className="w-1/6 cursor-pointer px-3 py-3"
+                  onClick={() => handleSort("user_rating")}
+                >
+                  <div className="flex items-center gap-2">
+                    User Rating {renderSortIcon("user_rating")}
+                  </div>
                 </th>
                 <th scope="col" className="w-1/6 px-3 py-3">
                   Genres
@@ -218,7 +225,7 @@ export default function Movies() {
                   className="w-1/12 cursor-pointer px-3 py-3"
                   onClick={() => handleSort("mpaa_rating")}
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center gap-2">
                     MPA Rating {renderSortIcon("mpaa_rating")}
                   </div>
                 </th>
