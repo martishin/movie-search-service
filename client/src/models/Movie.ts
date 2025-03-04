@@ -8,6 +8,8 @@ export default interface Movie {
   mpaa_rating: string;
   description: string;
   image: string;
+  video: string;
   genres: Genre[];
   user_rating: number;
+  is_liked: boolean;
 }

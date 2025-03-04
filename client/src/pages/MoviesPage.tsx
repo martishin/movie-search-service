@@ -15,8 +15,8 @@ export default function MoviesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<
     "title" | "release_date" | "mpaa_rating" | "user_rating"
-  >("title");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  >("user_rating");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     fetch("/api/movies")

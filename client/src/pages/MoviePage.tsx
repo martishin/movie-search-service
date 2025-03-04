@@ -41,10 +41,18 @@ export default function MoviePage(): ReactNode {
     fetchMovie();
   }, [id]);
 
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1);
+    } else {
+      navigate("/");
+    }
+  };
+
   return (
     <div className="px-6 sm:px-8 lg:px-10">
       <button
-        onClick={() => navigate("/movies")}
+        onClick={handleBack}
         className="mb-4 flex items-center gap-2 text-blue-600 hover:text-blue-800"
       >
         <FaArrowLeft className="h-5 w-5" /> Back
@@ -72,9 +80,11 @@ export default function MoviePage(): ReactNode {
               <p className="flex items-center gap-2 font-semibold">
                 <span className="text-gray-700">Genres:</span>
                 <span className="flex flex-wrap gap-2">
-                  {movie.genres.map((g) => (
-                    <GenreTag key={g.id} genre={g} />
-                  ))}
+                  {movie.genres
+                    .sort((a, b) => a.genre.localeCompare(b.genre))
+                    .map((g) => (
+                      <GenreTag key={g.id} genre={g} />
+                    ))}
                 </span>
               </p>
               <p className="font-semibold">
@@ -97,6 +107,20 @@ export default function MoviePage(): ReactNode {
         <div className="mt-6">
           <h4 className="text-lg font-semibold text-gray-900">Description</h4>
           <p className="leading-relaxed text-gray-800">{movie.description}</p>
+        </div>
+      )}
+      {movie?.video && (
+        <div className="mt-6 flex justify-start">
+          <div className="aspect-w-16 aspect-h-9 relative w-full max-w-2xl">
+            <iframe
+              className="h-64 w-full md:h-96"
+              src={`${movie.video}`}
+              title={`${movie.title}`}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
         </div>
       )}
     </div>

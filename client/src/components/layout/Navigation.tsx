@@ -1,13 +1,7 @@
 import { NavLink } from "react-router";
 import { JSX } from "react";
 import { useAuth } from "../../context/AuthContext";
-import {
-  FilmIcon,
-  HomeIcon,
-  PencilSquareIcon,
-  PlusCircleIcon,
-  TicketIcon,
-} from "@heroicons/react/24/outline";
+import { FilmIcon, TicketIcon, HeartIcon } from "@heroicons/react/24/outline";
 
 interface NavigationProps {
   isMobile?: boolean;
@@ -18,18 +12,12 @@ export default function Navigation({ isMobile, closeMenu }: NavigationProps): JS
   const { userDetails } = useAuth();
 
   const commonLinks = [
-    { title: "Home", path: "/", icon: <HomeIcon className="h-5 w-5" /> },
+    { title: "Watch", path: "/", icon: <TicketIcon className="h-5 w-5" /> },
     { title: "Movies", path: "/movies", icon: <FilmIcon className="h-5 w-5" /> },
-    { title: "Genres", path: "/genres", icon: <TicketIcon className="h-5 w-5" /> },
   ];
 
   const loggedInLinks = [
-    {
-      title: "Manage Catalogue",
-      path: "/manage-catalogue",
-      icon: <PencilSquareIcon className="h-5 w-5" />,
-    },
-    { title: "Add a Movie", path: "/admin/movie/0", icon: <PlusCircleIcon className="h-5 w-5" /> },
+    { title: "Favourites", path: "/favourites", icon: <HeartIcon className="h-5 w-5" /> },
   ];
 
   const links = userDetails ? [...commonLinks, ...loggedInLinks] : commonLinks;

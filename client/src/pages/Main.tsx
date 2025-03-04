@@ -1,13 +1,13 @@
 import { createBrowserRouter, RouterProvider } from "react-router";
 import App from "./App";
-import ErrorPage from "../pages/ErrorPage";
-import HomePage from "../pages/HomePage";
+import ErrorPage from "./ErrorPage";
+import WatchOnlinePage from "./WatchOnlinePage";
 import { AlertProvider } from "../context/AlertContext";
 import { AuthProvider } from "../context/AuthContext";
-import LoginPage from "../pages/LoginPage";
-import SignUpPage from "../pages/SignUpPage";
-import MoviesPage from "../pages/MoviesPage";
-import MoviePage from "../pages/MoviePage";
+import LoginPage from "./LoginPage";
+import SignUpPage from "./SignUpPage";
+import MoviesPage from "./MoviesPage";
+import MoviePage from "./MoviePage";
 
 const router = createBrowserRouter([
   {
@@ -15,7 +15,7 @@ const router = createBrowserRouter([
     element: <App />,
     errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <HomePage /> },
+      { index: true, element: <WatchOnlinePage /> },
       { path: "/login", element: <LoginPage /> },
       { path: "/sign-up", element: <SignUpPage /> },
       { path: "/movies", element: <MoviesPage /> },
