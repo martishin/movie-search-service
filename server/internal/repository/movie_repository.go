@@ -27,6 +27,7 @@ func (r *MovieRepository) CreateMovie(ctx context.Context, movie domain.Movie) (
 		MpaaRating:  pgtype.Text{String: movie.MPAARating, Valid: true},
 		Description: pgtype.Text{String: movie.Description, Valid: true},
 		Image:       pgtype.Text{String: movie.Image, Valid: true},
+		Video:       pgtype.Text{String: movie.Video, Valid: true},
 	}
 
 	return r.queries.CreateMovie(ctx, params)
@@ -49,6 +50,7 @@ func (r *MovieRepository) UpdateMovie(ctx context.Context, movie domain.Movie) e
 		MpaaRating:  pgtype.Text{String: movie.MPAARating, Valid: true},
 		Description: pgtype.Text{String: movie.Description, Valid: true},
 		Image:       pgtype.Text{String: movie.Image, Valid: true},
+		Video:       pgtype.Text{String: movie.Image, Valid: true},
 	}
 	return r.queries.UpdateMovie(ctx, params)
 }
@@ -95,4 +97,8 @@ func (r *MovieRepository) ListGenres(ctx context.Context) ([]db.Genre, error) {
 
 func (r *MovieRepository) ListMoviesWithGenres(ctx context.Context) ([]db.ListMoviesWithGenresRow, error) {
 	return r.queries.ListMoviesWithGenres(ctx)
+}
+
+func (r *MovieRepository) ListMoviesWithGenresAndLikes(ctx context.Context, userID int) ([]db.ListMoviesWithGenresAndLikeStatusRow, error) {
+	return r.queries.ListMoviesWithGenresAndLikeStatus(ctx, int32(userID))
 }

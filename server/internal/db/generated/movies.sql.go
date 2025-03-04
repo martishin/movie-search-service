@@ -27,9 +27,9 @@ func (q *Queries) AddMovieGenre(ctx context.Context, arg AddMovieGenreParams) er
 }
 
 const createMovie = `-- name: CreateMovie :one
-INSERT INTO movies (title, release_date, runtime, mpaa_rating, description, image)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, title, release_date, runtime, mpaa_rating, description, image, created_at, updated_at, user_rating
+INSERT INTO movies (title, release_date, runtime, mpaa_rating, description, image, video)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, title, release_date, runtime, mpaa_rating, description, image, created_at, updated_at, user_rating, video
 `
 
 type CreateMovieParams struct {
@@ -39,6 +39,7 @@ type CreateMovieParams struct {
 	MpaaRating  pgtype.Text
 	Description pgtype.Text
 	Image       pgtype.Text
+	Video       pgtype.Text
 }
 
 func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie, error) {
@@ -49,6 +50,7 @@ func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie
 		arg.MpaaRating,
 		arg.Description,
 		arg.Image,
+		arg.Video,
 	)
 	var i Movie
 	err := row.Scan(
@@ -62,6 +64,7 @@ func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UserRating,
+		&i.Video,
 	)
 	return i, err
 }
@@ -93,7 +96,7 @@ func (q *Queries) DeleteMovieGenres(ctx context.Context, movieID int32) error {
 }
 
 const getMovieByID = `-- name: GetMovieByID :one
-SELECT id, title, release_date, runtime, mpaa_rating, description, image, created_at, updated_at, user_rating
+SELECT id, title, release_date, runtime, mpaa_rating, description, image, created_at, updated_at, user_rating, video
 FROM
     movies
 WHERE
@@ -114,6 +117,7 @@ func (q *Queries) GetMovieByID(ctx context.Context, id int32) (Movie, error) {
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UserRating,
+		&i.Video,
 	)
 	return i, err
 }
@@ -157,7 +161,7 @@ SELECT
     g.genre
 FROM
     movies_genres mg
-    JOIN genres g ON mg.genre_id = g.id
+        JOIN genres g ON mg.genre_id = g.id
 WHERE
     mg.movie_id = $1
 `
@@ -188,7 +192,7 @@ func (q *Queries) ListGenresByMovieID(ctx context.Context, movieID int32) ([]Lis
 }
 
 const listMovies = `-- name: ListMovies :many
-SELECT id, title, release_date, runtime, mpaa_rating, description, image, created_at, updated_at, user_rating
+SELECT id, title, release_date, runtime, mpaa_rating, description, image, created_at, updated_at, user_rating, video
 FROM
     movies
 ORDER BY
@@ -215,6 +219,7 @@ func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.UserRating,
+			&i.Video,
 		); err != nil {
 			return nil, err
 		}
@@ -228,10 +233,10 @@ func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
 
 const listMoviesByGenre = `-- name: ListMoviesByGenre :many
 SELECT
-    m.id, m.title, m.release_date, m.runtime, m.mpaa_rating, m.description, m.image, m.created_at, m.updated_at, m.user_rating
+    m.id, m.title, m.release_date, m.runtime, m.mpaa_rating, m.description, m.image, m.created_at, m.updated_at, m.user_rating, m.video
 FROM
     movies m
-    JOIN movies_genres mg ON m.id = mg.movie_id
+        JOIN movies_genres mg ON m.id = mg.movie_id
 WHERE
     mg.genre_id = $1
 ORDER BY
@@ -258,6 +263,7 @@ func (q *Queries) ListMoviesByGenre(ctx context.Context, genreID int32) ([]Movie
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.UserRating,
+			&i.Video,
 		); err != nil {
 			return nil, err
 		}
@@ -279,12 +285,15 @@ SELECT
     m.description,
     m.image,
     m.user_rating,
+    m.video,
     g.id AS genre_id,
     g.genre
-FROM movies m
-     LEFT JOIN movies_genres mg ON m.id = mg.movie_id
-     LEFT JOIN genres g ON mg.genre_id = g.id
-ORDER BY m.title
+FROM
+    movies m
+        LEFT JOIN movies_genres mg ON m.id = mg.movie_id
+        LEFT JOIN genres g ON mg.genre_id = g.id
+ORDER BY
+    m.title
 `
 
 type ListMoviesWithGenresRow struct {
@@ -296,6 +305,7 @@ type ListMoviesWithGenresRow struct {
 	Description pgtype.Text
 	Image       pgtype.Text
 	UserRating  pgtype.Numeric
+	Video       pgtype.Text
 	GenreID     pgtype.Int4
 	Genre       pgtype.Text
 }
@@ -318,8 +328,83 @@ func (q *Queries) ListMoviesWithGenres(ctx context.Context) ([]ListMoviesWithGen
 			&i.Description,
 			&i.Image,
 			&i.UserRating,
+			&i.Video,
 			&i.GenreID,
 			&i.Genre,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMoviesWithGenresAndLikeStatus = `-- name: ListMoviesWithGenresAndLikeStatus :many
+SELECT
+    m.id AS movie_id,
+    m.title,
+    m.release_date,
+    m.runtime,
+    m.mpaa_rating,
+    m.description,
+    m.image,
+    m.user_rating,
+    m.video,
+    g.id AS genre_id,
+    g.genre,
+    CASE
+    WHEN ulm.user_id IS NOT NULL THEN true
+    ELSE false
+        END AS is_liked
+FROM
+    movies m
+        LEFT JOIN movies_genres mg ON m.id = mg.movie_id
+        LEFT JOIN genres g ON mg.genre_id = g.id
+        LEFT JOIN users_like_movies ulm ON m.id = ulm.movie_id AND ulm.user_id = $1
+ORDER BY
+    m.title, g.genre
+`
+
+type ListMoviesWithGenresAndLikeStatusRow struct {
+	MovieID     int32
+	Title       string
+	ReleaseDate pgtype.Date
+	Runtime     pgtype.Int4
+	MpaaRating  pgtype.Text
+	Description pgtype.Text
+	Image       pgtype.Text
+	UserRating  pgtype.Numeric
+	Video       pgtype.Text
+	GenreID     pgtype.Int4
+	Genre       pgtype.Text
+	IsLiked     bool
+}
+
+func (q *Queries) ListMoviesWithGenresAndLikeStatus(ctx context.Context, userID int32) ([]ListMoviesWithGenresAndLikeStatusRow, error) {
+	rows, err := q.db.Query(ctx, listMoviesWithGenresAndLikeStatus, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListMoviesWithGenresAndLikeStatusRow
+	for rows.Next() {
+		var i ListMoviesWithGenresAndLikeStatusRow
+		if err := rows.Scan(
+			&i.MovieID,
+			&i.Title,
+			&i.ReleaseDate,
+			&i.Runtime,
+			&i.MpaaRating,
+			&i.Description,
+			&i.Image,
+			&i.UserRating,
+			&i.Video,
+			&i.GenreID,
+			&i.Genre,
+			&i.IsLiked,
 		); err != nil {
 			return nil, err
 		}
@@ -338,7 +423,8 @@ SET title        = $2,
     runtime      = $4,
     mpaa_rating  = $5,
     description  = $6,
-    image        = $7
+    image        = $7,
+    video        = $8
 WHERE
     id = $1
 `
@@ -351,6 +437,7 @@ type UpdateMovieParams struct {
 	MpaaRating  pgtype.Text
 	Description pgtype.Text
 	Image       pgtype.Text
+	Video       pgtype.Text
 }
 
 func (q *Queries) UpdateMovie(ctx context.Context, arg UpdateMovieParams) error {
@@ -362,6 +449,7 @@ func (q *Queries) UpdateMovie(ctx context.Context, arg UpdateMovieParams) error 
 		arg.MpaaRating,
 		arg.Description,
 		arg.Image,
+		arg.Video,
 	)
 	return err
 }

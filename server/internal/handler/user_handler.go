@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/markbates/goth/gothic"
+	"github.com/go-chi/chi/v5"
 	"github.com/martishin/movie-search-service/internal/adapter"
 	"github.com/martishin/movie-search-service/internal/service"
 )
@@ -20,17 +20,9 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 
 func (h *UserHandler) GetUserHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Retrieve user ID from session
-		userIDStr, err := gothic.GetFromSession("user_id", r)
-		if err != nil || userIDStr == "" {
-			adapter.JsonErrorResponse(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		// Convert userID from string to int
-		userID, err := strconv.Atoi(userIDStr)
+		userID, err := adapter.GetUserIDFromSession(r)
 		if err != nil {
-			adapter.JsonErrorResponse(w, "Invalid user ID", http.StatusBadRequest)
+			adapter.JsonErrorResponse(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
@@ -43,5 +35,69 @@ func (h *UserHandler) GetUserHandler() http.HandlerFunc {
 
 		// Send response
 		json.NewEncoder(w).Encode(user)
+	}
+}
+
+func (h *UserHandler) AddLikeHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := adapter.GetUserIDFromSession(r)
+		if err != nil {
+			adapter.JsonErrorResponse(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		movieID, err := strconv.Atoi(chi.URLParam(r, "movie_id"))
+		if err != nil {
+			adapter.JsonErrorResponse(w, "Invalid movie ID", http.StatusBadRequest)
+			return
+		}
+
+		if err := h.userService.LikeMovie(r.Context(), userID, movieID); err != nil {
+			adapter.JsonErrorResponse(w, "Could not like movie", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func (h *UserHandler) RemoveLikeHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := adapter.GetUserIDFromSession(r)
+		if err != nil {
+			adapter.JsonErrorResponse(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		movieID, err := strconv.Atoi(chi.URLParam(r, "movie_id"))
+		if err != nil {
+			adapter.JsonErrorResponse(w, "Invalid movie ID", http.StatusBadRequest)
+			return
+		}
+
+		if err := h.userService.UnlikeMovie(r.Context(), userID, movieID); err != nil {
+			adapter.JsonErrorResponse(w, "Could not unlike movie", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func (h *UserHandler) GetLikedMoviesHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, err := adapter.GetUserIDFromSession(r)
+		if err != nil {
+			adapter.JsonErrorResponse(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		movies, err := h.userService.GetLikedMovies(r.Context(), userID)
+		if err != nil {
+			adapter.JsonErrorResponse(w, "Could not fetch liked movies", http.StatusInternalServerError)
+			return
+		}
+
+		json.NewEncoder(w).Encode(movies)
 	}
 }

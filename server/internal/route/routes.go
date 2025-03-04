@@ -45,6 +45,7 @@ func RegisterRoutes(
 	// API routes (protected)
 	r.Route("/api", func(api chi.Router) {
 		api.With(middleware.AuthMiddleware).Get("/users/me", userHandler.GetUserHandler())
+		api.With(middleware.AuthMiddleware).Get("/movies-with-likes", movieHandler.ListMoviesWithGenresAndLikesHandler())
 
 		// Movie endpoints
 		api.Get("/movies", movieHandler.ListMoviesHandler())
@@ -52,6 +53,15 @@ func RegisterRoutes(
 		api.Post("/movies", movieHandler.CreateMovieHandler())
 		api.Get("/movies/genres/{id}", movieHandler.ListMoviesByGenreHandler())
 		api.Get("/genres", movieHandler.ListGenresHandler())
+
+		// Liking Movies
+		api.Route("/movies/likes", func(likeRouter chi.Router) {
+			likeRouter.Use(middleware.AuthMiddleware)
+
+			likeRouter.Get("/", userHandler.GetLikedMoviesHandler())
+			likeRouter.Post("/{movie_id}", userHandler.AddLikeHandler())
+			likeRouter.Delete("/{movie_id}", userHandler.RemoveLikeHandler())
+		})
 
 		// Admin endpoints
 		api.Route("/admin", func(admin chi.Router) {

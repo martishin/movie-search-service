@@ -187,3 +187,26 @@ func (h *MovieHandler) ListGenresHandler() http.HandlerFunc {
 		json.NewEncoder(w).Encode(genres)
 	}
 }
+
+func (h *MovieHandler) ListMoviesWithGenresAndLikesHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		logger := middleware.GetLogger(r.Context())
+
+		userID, err := adapter.GetUserIDFromSession(r)
+		if err != nil {
+			adapter.JsonErrorResponse(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Fetch movies with genres and like status
+		movies, err := h.movieService.ListMoviesWithGenresAndLikes(r.Context(), userID)
+		if err != nil {
+			logger.Error("Failed to fetch movies with genres and likes", slog.Any("error", err))
+			adapter.JsonErrorResponse(w, "Could not fetch movies", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(movies)
+	}
+}

@@ -74,6 +74,7 @@ func (s *MovieService) ListMoviesWithGenres(ctx context.Context) ([]domain.Movie
 				MPAARating:  row.MpaaRating.String,
 				Description: row.Description.String,
 				Image:       row.Image.String,
+				Video:       row.Video.String,
 				Genres:      []*domain.Genre{},
 				UserRating:  userRating.Float64,
 			}
@@ -131,6 +132,7 @@ func mapDBMovieToDomainMovie(dbMovie db.Movie) domain.Movie {
 		MPAARating:  dbMovie.MpaaRating.String,
 		Description: dbMovie.Description.String,
 		Image:       dbMovie.Image.String,
+		Video:       dbMovie.Video.String,
 		UserRating:  userRating.Float64,
 	}
 }
@@ -173,4 +175,52 @@ func (s *MovieService) ListGenres(ctx context.Context) ([]domain.Genre, error) {
 		})
 	}
 	return genres, nil
+}
+
+func (s *MovieService) ListMoviesWithGenresAndLikes(ctx context.Context, userID int) ([]domain.MovieWithLike, error) {
+	dbMovies, err := s.movieRepo.ListMoviesWithGenresAndLikes(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	movieMap := make(map[int]domain.MovieWithLike)
+
+	for _, row := range dbMovies {
+		movieID := int(row.MovieID)
+		movie, exists := movieMap[movieID]
+		userRating, _ := row.UserRating.Float64Value()
+
+		if !exists {
+			movie = domain.MovieWithLike{
+				ID:          movieID,
+				Title:       row.Title,
+				ReleaseDate: row.ReleaseDate.Time,
+				RunTime:     int(row.Runtime.Int32),
+				MPAARating:  row.MpaaRating.String,
+				Description: row.Description.String,
+				Image:       row.Image.String,
+				Video:       row.Video.String,
+				Genres:      []*domain.Genre{},
+				UserRating:  userRating.Float64,
+				IsLiked:     row.IsLiked,
+			}
+		}
+
+		if row.GenreID.Valid {
+			movie.Genres = append(movie.Genres, &domain.Genre{
+				ID:    int(row.GenreID.Int32),
+				Genre: row.Genre.String,
+			})
+		}
+
+		movieMap[movieID] = movie
+	}
+
+	// Convert map to slice
+	movies := make([]domain.MovieWithLike, 0, len(movieMap))
+	for _, movie := range movieMap {
+		movies = append(movies, movie)
+	}
+
+	return movies, nil
 }

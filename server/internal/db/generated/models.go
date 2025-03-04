@@ -26,6 +26,7 @@ type Movie struct {
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
 	UserRating  pgtype.Numeric
+	Video       pgtype.Text
 }
 
 type MoviesGenre struct {
@@ -43,4 +44,11 @@ type User struct {
 	PictureUrl pgtype.Text
 	CreatedAt  pgtype.Timestamp
 	UpdatedAt  pgtype.Timestamp
+}
+
+type UsersLikeMovie struct {
+	ID        int32
+	UserID    int32
+	MovieID   int32
+	CreatedAt pgtype.Timestamp
 }

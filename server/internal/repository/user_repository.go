@@ -44,3 +44,21 @@ func (r *UserRepository) ListUsers(ctx context.Context) ([]db.User, error) {
 func (r *UserRepository) DeleteUser(ctx context.Context, id int) error {
 	return r.queries.DeleteUser(ctx, int32(id))
 }
+
+func (r *UserRepository) LikeMovie(ctx context.Context, userID, movieID int) error {
+	return r.queries.LikeMovie(ctx, db.LikeMovieParams{
+		UserID:  int32(userID),
+		MovieID: int32(movieID),
+	})
+}
+
+func (r *UserRepository) UnlikeMovie(ctx context.Context, userID, movieID int) error {
+	return r.queries.UnlikeMovie(ctx, db.UnlikeMovieParams{
+		UserID:  int32(userID),
+		MovieID: int32(movieID),
+	})
+}
+
+func (r *UserRepository) GetLikedMovies(ctx context.Context, userID int) ([]db.GetLikedMoviesByUserRow, error) {
+	return r.queries.GetLikedMoviesByUser(ctx, int32(userID))
+}
