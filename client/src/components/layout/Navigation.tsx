@@ -17,7 +17,7 @@ export default function Navigation({ isMobile, closeMenu }: NavigationProps): JS
   ];
 
   const loggedInLinks = [
-    { title: "Favourites", path: "/favourites", icon: <HeartIcon className="h-5 w-5" /> },
+    { title: "Liked", path: "/liked", icon: <HeartIcon className="h-5 w-5" /> },
   ];
 
   const links = userDetails ? [...commonLinks, ...loggedInLinks] : commonLinks;

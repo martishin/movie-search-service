@@ -24,7 +24,7 @@ func (s *MovieService) CreateMovie(ctx context.Context, movie domain.Movie) (dom
 	return mapDBMovieToDomainMovie(dbMovie), nil
 }
 
-func (s *MovieService) GetMovieByID(ctx context.Context, id int) (domain.Movie, error) {
+func (s *MovieService) GetMovieByIDWithGenres(ctx context.Context, id int) (domain.Movie, error) {
 	dbMovie, err := s.movieRepo.GetMovieByID(ctx, id)
 	if err != nil {
 		return domain.Movie{}, err
@@ -40,17 +40,21 @@ func (s *MovieService) GetMovieByID(ctx context.Context, id int) (domain.Movie, 
 	return movie, nil
 }
 
-func (s *MovieService) ListMovies(ctx context.Context) ([]domain.Movie, error) {
-	dbMovies, err := s.movieRepo.ListMovies(ctx)
+func (s *MovieService) GetMovieByIDWithGenresAndLike(ctx context.Context, movieID int, userID int) (domain.MovieWithLike, error) {
+	dbMovie, err := s.movieRepo.GetMovieByID(ctx, movieID)
 	if err != nil {
-		return nil, err
+		return domain.MovieWithLike{}, err
 	}
 
-	var movies []domain.Movie
-	for _, dbMovie := range dbMovies {
-		movies = append(movies, mapDBMovieToDomainMovie(dbMovie))
+	genres, err := s.movieRepo.ListGenresByMovieID(ctx, movieID)
+	if err != nil {
+		return domain.MovieWithLike{}, err
 	}
-	return movies, nil
+
+	isLiked, err := s.movieRepo.IsMovieLikedByUser(ctx, movieID, userID)
+	movie := mapDBMovieToDomainMovieWithLike(dbMovie, isLiked)
+	movie.Genres = mapDBGenresToDomainGenres(genres)
+	return movie, nil
 }
 
 func (s *MovieService) ListMoviesWithGenres(ctx context.Context) ([]domain.Movie, error) {
@@ -134,6 +138,23 @@ func mapDBMovieToDomainMovie(dbMovie db.Movie) domain.Movie {
 		Image:       dbMovie.Image.String,
 		Video:       dbMovie.Video.String,
 		UserRating:  userRating.Float64,
+	}
+}
+
+func mapDBMovieToDomainMovieWithLike(dbMovie db.Movie, isLiked bool) domain.MovieWithLike {
+	userRating, _ := dbMovie.UserRating.Float64Value()
+
+	return domain.MovieWithLike{
+		ID:          int(dbMovie.ID),
+		Title:       dbMovie.Title,
+		ReleaseDate: dbMovie.ReleaseDate.Time,
+		RunTime:     int(dbMovie.Runtime.Int32),
+		MPAARating:  dbMovie.MpaaRating.String,
+		Description: dbMovie.Description.String,
+		Image:       dbMovie.Image.String,
+		Video:       dbMovie.Video.String,
+		UserRating:  userRating.Float64,
+		IsLiked:     isLiked,
 	}
 }
 

@@ -122,6 +122,31 @@ func (q *Queries) GetMovieByID(ctx context.Context, id int32) (Movie, error) {
 	return i, err
 }
 
+const isMovieLikedByUser = `-- name: IsMovieLikedByUser :one
+SELECT
+    EXISTS (
+        SELECT
+            1
+        FROM
+            users_like_movies
+        WHERE
+              user_id = $1
+          AND movie_id = $2
+    )
+`
+
+type IsMovieLikedByUserParams struct {
+	UserID  int32
+	MovieID int32
+}
+
+func (q *Queries) IsMovieLikedByUser(ctx context.Context, arg IsMovieLikedByUserParams) (bool, error) {
+	row := q.db.QueryRow(ctx, isMovieLikedByUser, arg.UserID, arg.MovieID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const listGenres = `-- name: ListGenres :many
 SELECT id, genre, created_at, updated_at
 FROM

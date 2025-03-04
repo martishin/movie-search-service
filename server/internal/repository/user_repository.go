@@ -37,14 +37,6 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (db.U
 	return r.queries.GetUserByEmail(ctx, email)
 }
 
-func (r *UserRepository) ListUsers(ctx context.Context) ([]db.User, error) {
-	return r.queries.ListUsers(ctx)
-}
-
-func (r *UserRepository) DeleteUser(ctx context.Context, id int) error {
-	return r.queries.DeleteUser(ctx, int32(id))
-}
-
 func (r *UserRepository) LikeMovie(ctx context.Context, userID, movieID int) error {
 	return r.queries.LikeMovie(ctx, db.LikeMovieParams{
 		UserID:  int32(userID),

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
+import { FaHeart, FaRegHeart } from "react-icons/fa6";
 import { useAlert } from "../context/AlertContext";
+import { useAuth } from "../context/AuthContext";
 import Movie from "../models/Movie";
 import { FaSortAmountDown, FaSortAmountUp } from "react-icons/fa";
 import Genre from "../models/Genre";
@@ -12,6 +14,7 @@ export default function MoviesPage() {
   const [filteredMovies, setFilteredMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { showAlert } = useAlert();
+  const { userDetails } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<
     "title" | "release_date" | "mpaa_rating" | "user_rating"
@@ -19,13 +22,16 @@ export default function MoviesPage() {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
-    fetch("/api/movies")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch movies");
-        return res.json();
-      })
-      .then((data: Movie[]) => {
-        const formattedMovies = data.map((movie) => ({
+    const fetchMovies = async () => {
+      setIsLoading(true);
+      const apiEndpoint = userDetails ? "/api/movies-with-likes" : "/api/movies";
+
+      try {
+        const response = await fetch(apiEndpoint, { credentials: "include" });
+        if (!response.ok) throw new Error("Failed to fetch movies");
+
+        const data = await response.json();
+        const formattedMovies = data.map((movie: Movie) => ({
           ...movie,
           release_date: new Date(movie.release_date).toLocaleDateString("en-US", {
             year: "numeric",
@@ -33,14 +39,22 @@ export default function MoviesPage() {
             day: "numeric",
           }),
         }));
+
         setMovies(formattedMovies);
         setFilteredMovies(formattedMovies);
-      })
-      .catch((err) => {
-        showAlert(err.message);
-      })
-      .finally(() => setIsLoading(false));
-  }, [showAlert]);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          showAlert(err.message);
+        } else {
+          showAlert("An unknown error occurred");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMovies();
+  }, [userDetails, showAlert]);
 
   const handleSort = (field: "title" | "release_date" | "mpaa_rating" | "user_rating") => {
     if (field === sortField) {
@@ -48,6 +62,44 @@ export default function MoviesPage() {
     } else {
       setSortField(field);
       setSortDirection("desc");
+    }
+  };
+
+  const toggleLike = async (movieID: number, isLiked: boolean) => {
+    if (!userDetails) return;
+
+    const method = isLiked ? "DELETE" : "POST";
+    const endpoint = `/api/movies/likes/${movieID}`;
+
+    // Optimistic UI update
+    setMovies((prevMovies) =>
+      prevMovies.map((movie) => (movie.id === movieID ? { ...movie, is_liked: !isLiked } : movie)),
+    );
+
+    try {
+      const response = await fetch(endpoint, {
+        method,
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) throw new Error(`Failed to ${isLiked ? "unlike" : "like"} movie`);
+
+      setFilteredMovies((prevMovies) =>
+        prevMovies.map((movie) =>
+          movie.id === movieID ? { ...movie, is_liked: !isLiked } : movie,
+        ),
+      );
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        showAlert(err.message);
+      } else {
+        showAlert("An unknown error occurred");
+      }
+      // Revert the UI update if the request fails
+      setMovies((prevMovies) =>
+        prevMovies.map((movie) => (movie.id === movieID ? { ...movie, is_liked: isLiked } : movie)),
+      );
     }
   };
 
@@ -144,6 +196,11 @@ export default function MoviesPage() {
                 >
                   <div className="flex items-center gap-2">Movie {renderSortIcon("title")}</div>
                 </th>
+                {userDetails ? (
+                  <th scope="col" className="w-1/12 px-3 py-3">
+                    Like
+                  </th>
+                ) : null}
                 <th
                   scope="col"
                   className="w-1/6 cursor-pointer px-3 py-3"
@@ -187,6 +244,16 @@ export default function MoviesPage() {
                       {movie.title}
                     </Link>
                   </td>
+                  {userDetails ? (
+                    <td className="px-3 py-3">
+                      <button
+                        className="cursor-pointer"
+                        onClick={() => toggleLike(movie.id, movie.is_liked)}
+                      >
+                        {movie.is_liked ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
+                      </button>
+                    </td>
+                  ) : null}
                   <td className="px-3 py-3 whitespace-nowrap">
                     <UserRatingStar rating={movie.user_rating} />
                   </td>

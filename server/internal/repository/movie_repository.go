@@ -102,3 +102,15 @@ func (r *MovieRepository) ListMoviesWithGenres(ctx context.Context) ([]db.ListMo
 func (r *MovieRepository) ListMoviesWithGenresAndLikes(ctx context.Context, userID int) ([]db.ListMoviesWithGenresAndLikeStatusRow, error) {
 	return r.queries.ListMoviesWithGenresAndLikeStatus(ctx, int32(userID))
 }
+
+func (r *MovieRepository) IsMovieLikedByUser(ctx context.Context, movieID, userID int) (bool, error) {
+	params := db.IsMovieLikedByUserParams{
+		MovieID: int32(movieID),
+		UserID:  int32(userID),
+	}
+	liked, err := r.queries.IsMovieLikedByUser(ctx, params)
+	if err != nil {
+		return false, err
+	}
+	return liked, nil
+}

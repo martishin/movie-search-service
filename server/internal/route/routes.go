@@ -45,13 +45,11 @@ func RegisterRoutes(
 	// API routes (protected)
 	r.Route("/api", func(api chi.Router) {
 		api.With(middleware.AuthMiddleware).Get("/users/me", userHandler.GetUserHandler())
-		api.With(middleware.AuthMiddleware).Get("/movies-with-likes", movieHandler.ListMoviesWithGenresAndLikesHandler())
 
 		// Movie endpoints
 		api.Get("/movies", movieHandler.ListMoviesHandler())
 		api.Get("/movies/{id}", movieHandler.GetMovieHandler())
 		api.Post("/movies", movieHandler.CreateMovieHandler())
-		api.Get("/movies/genres/{id}", movieHandler.ListMoviesByGenreHandler())
 		api.Get("/genres", movieHandler.ListGenresHandler())
 
 		// Liking Movies
@@ -63,12 +61,18 @@ func RegisterRoutes(
 			likeRouter.Delete("/{movie_id}", userHandler.RemoveLikeHandler())
 		})
 
+		// Movies with likes
+		api.Route("/movies-with-likes", func(moviesWithLikesRouter chi.Router) {
+			moviesWithLikesRouter.Use(middleware.AuthMiddleware)
+
+			moviesWithLikesRouter.Get("/", movieHandler.ListMoviesWithGenresAndLikesHandler())
+			moviesWithLikesRouter.Get("/{movie_id}", movieHandler.GetMovieHandlerWithLike())
+		})
+
 		// Admin endpoints
 		api.Route("/admin", func(admin chi.Router) {
 			admin.Use(middleware.AuthMiddleware)
 
-			admin.Get("/movies", movieHandler.ListMoviesHandler())
-			admin.Get("/movies/{id}", movieHandler.GetMovieHandler())
 			admin.Post("/movies", movieHandler.CreateMovieHandler())
 			admin.Put("/movies/{id}", movieHandler.UpdateMovieHandler())
 			admin.Delete("/movies/{id}", movieHandler.DeleteMovieHandler())

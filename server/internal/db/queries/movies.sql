@@ -119,3 +119,16 @@ FROM
         LEFT JOIN users_like_movies ulm ON m.id = ulm.movie_id AND ulm.user_id = sqlc.arg(user_id)
 ORDER BY
     m.title, g.genre;
+
+
+-- name: IsMovieLikedByUser :one
+SELECT
+    EXISTS (
+        SELECT
+            1
+        FROM
+            users_like_movies
+        WHERE
+              user_id = $1
+          AND movie_id = $2
+    );

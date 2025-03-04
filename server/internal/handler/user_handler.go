@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/martishin/movie-search-service/internal/adapter"
 	"github.com/martishin/movie-search-service/internal/service"
 )
@@ -46,7 +45,7 @@ func (h *UserHandler) AddLikeHandler() http.HandlerFunc {
 			return
 		}
 
-		movieID, err := strconv.Atoi(chi.URLParam(r, "movie_id"))
+		movieID, err := strconv.Atoi(r.PathValue("movie_id"))
 		if err != nil {
 			adapter.JsonErrorResponse(w, "Invalid movie ID", http.StatusBadRequest)
 			return
@@ -69,7 +68,7 @@ func (h *UserHandler) RemoveLikeHandler() http.HandlerFunc {
 			return
 		}
 
-		movieID, err := strconv.Atoi(chi.URLParam(r, "movie_id"))
+		movieID, err := strconv.Atoi(r.PathValue("movie_id"))
 		if err != nil {
 			adapter.JsonErrorResponse(w, "Invalid movie ID", http.StatusBadRequest)
 			return

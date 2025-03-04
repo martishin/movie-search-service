@@ -1,6 +1,8 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { FaArrowLeft } from "react-icons/fa6";
+import { FaArrowLeft, FaHeart, FaRegHeart } from "react-icons/fa6";
+import { useAlert } from "../context/AlertContext";
+import { useAuth } from "../context/AuthContext";
 
 import Movie from "../models/Movie";
 import GenreTag from "../components/GenreTag";
@@ -10,15 +12,20 @@ export default function MoviePage(): ReactNode {
   const [movie, setMovie] = useState<Movie | null>(null);
   const navigate = useNavigate();
   const { id } = useParams();
+  const { userDetails } = useAuth();
+  const { showAlert } = useAlert();
   const [isFetchingMovie, setIsFetchingMovie] = useState(true);
 
   useEffect(() => {
     const fetchMovie = async () => {
       try {
-        const response = await fetch(`/api/movies/${id}`, {
+        const apiEndpoint = userDetails ? `/api/movies-with-likes/${id}` : `/api/movies/${id}`;
+        const response = await fetch(apiEndpoint, {
           method: "GET",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
         });
+
         if (!response.ok) throw new Error("Failed to fetch movie");
 
         const data: Movie = await response.json();
@@ -29,23 +36,49 @@ export default function MoviePage(): ReactNode {
             month: "long",
             day: "numeric",
           }),
+          is_liked: data.is_liked ?? false, // Ensure is_liked exists
         };
         setMovie(formattedMovie);
       } catch (error) {
-        console.error("Error fetching movie:", error);
+        showAlert(error instanceof Error ? error.message : "An unknown error occurred");
       } finally {
         setIsFetchingMovie(false);
       }
     };
 
     fetchMovie();
-  }, [id]);
+  }, [id, userDetails, showAlert]);
 
   const handleBack = () => {
     if (window.history.state && window.history.state.idx > 0) {
       navigate(-1);
     } else {
       navigate("/");
+    }
+  };
+
+  const toggleLike = async () => {
+    if (!userDetails || !movie) return;
+
+    const method = movie.is_liked ? "DELETE" : "POST";
+    const endpoint = `/api/movies/likes/${movie.id}`;
+
+    // Optimistic UI update
+    setMovie((prev) => (prev ? { ...prev, is_liked: !prev.is_liked } : prev));
+
+    try {
+      const response = await fetch(endpoint, {
+        method,
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) throw new Error(`Failed to ${movie.is_liked ? "unlike" : "like"} movie`);
+    } catch (error) {
+      showAlert(error instanceof Error ? error.message : "An unknown error occurred");
+
+      // Revert UI update if request fails
+      setMovie((prev) => (prev ? { ...prev, is_liked: !prev.is_liked } : prev));
     }
   };
 
@@ -72,7 +105,18 @@ export default function MoviePage(): ReactNode {
               </div>
             )}
             <div className="flex-1 space-y-2 text-gray-900">
-              <h3 className="text-2xl font-bold tracking-tight">{movie.title}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-2xl font-bold tracking-tight">{movie.title}</h3>
+                {userDetails && (
+                  <button onClick={toggleLike} className="cursor-pointer">
+                    {movie.is_liked ? (
+                      <FaHeart size={20} className="text-red-500" />
+                    ) : (
+                      <FaRegHeart size={20} />
+                    )}
+                  </button>
+                )}
+              </div>
               <p className="flex items-center gap-2 font-semibold">
                 <span className="text-gray-700">User Rating:</span>
                 <UserRatingStar rating={movie.user_rating} />

@@ -68,24 +68,6 @@ func (s *UserService) GetUserIDAndPasswordByEmail(ctx context.Context, email str
 	return int(dbUser.ID), dbUser.Password.String, nil
 }
 
-func (s *UserService) ListUsers(ctx context.Context) ([]domain.User, error) {
-	dbUsers, err := s.userRepo.ListUsers(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	users := make([]domain.User, len(dbUsers))
-	for i, dbUser := range dbUsers {
-		users[i] = mapDBUserToDomainUser(dbUser)
-	}
-
-	return users, nil
-}
-
-func (s *UserService) DeleteUser(ctx context.Context, id int) error {
-	return s.userRepo.DeleteUser(ctx, id)
-}
-
 func mapDBUserToDomainUser(dbUser db.User) domain.User {
 	return domain.User{
 		ID:         int(dbUser.ID),
@@ -138,6 +120,8 @@ func (s *UserService) GetLikedMovies(ctx context.Context, userID int) ([]domain.
 				Genre: row.Genre.String,
 			})
 		}
+
+		movieMap[movieID] = movie
 	}
 
 	movies := make([]domain.Movie, 0)
