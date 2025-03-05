@@ -1,8 +1,9 @@
 import { JSX } from "react";
 import { Outlet } from "react-router";
-import { useAuth } from "../context/AuthContext";
-import Navigation from "../components/layout/Navigation";
+
 import Header from "../components/layout/Header";
+import Navigation from "../components/layout/Navigation";
+import { useAuth } from "../context/AuthContext";
 
 export default function App(): JSX.Element | null {
   const { userDetails } = useAuth();

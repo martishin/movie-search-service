@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
 import { FaPlay } from "react-icons/fa";
-import { useAlert } from "../context/AlertContext";
-import Movie from "../models/Movie";
+import { Link } from "react-router";
+
+import { API_URL } from "../api";
 import GenreTag from "../components/GenreTag";
 import UserRatingStar from "../components/UserRatingStar";
+import { useAlert } from "../context/AlertContext";
+import Movie from "../models/Movie";
 
 export default function WatchOnlinePage() {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -12,7 +14,7 @@ export default function WatchOnlinePage() {
   const { showAlert } = useAlert();
 
   useEffect(() => {
-    fetch("/api/movies")
+    fetch(`${API_URL}/api/movies`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch movies");
         return res.json();

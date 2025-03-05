@@ -1,6 +1,7 @@
-import { cleanup, render } from "@testing-library/react";
-import Index from "./Index";
 import { expect } from "@jest/globals";
+import { cleanup, render } from "@testing-library/react";
+
+import Index from "./Index";
 
 afterEach(() => {
   cleanup();

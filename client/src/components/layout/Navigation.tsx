@@ -1,7 +1,8 @@
-import { NavLink } from "react-router";
+import { FilmIcon, HeartIcon, TicketIcon } from "@heroicons/react/24/outline";
 import { JSX } from "react";
+import { NavLink } from "react-router";
+
 import { useAuth } from "../../context/AuthContext";
-import { FilmIcon, TicketIcon, HeartIcon } from "@heroicons/react/24/outline";
 
 interface NavigationProps {
   isMobile?: boolean;

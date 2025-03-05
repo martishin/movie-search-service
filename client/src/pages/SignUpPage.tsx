@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import LoginInput from "../form/LoginInput";
-import { useAuth } from "../context/AuthContext";
-import { useAlert } from "../context/AlertContext";
+
+import { API_URL } from "../api";
 import GoogleAuthButton from "../components/GoogleAuthButton";
+import { useAlert } from "../context/AlertContext";
+import { useAuth } from "../context/AuthContext";
+import LoginInput from "../form/LoginInput";
 
 export default function SignUpPage() {
   const [firstName, setFirstName] = useState("");
@@ -41,7 +43,7 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/auth/signup", {
+      const res = await fetch(`${API_URL}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -135,7 +137,10 @@ export default function SignUpPage() {
       </form>
 
       <div className="mt-4">
-        <GoogleAuthButton href="/auth/start?provider=google" text="Sign up with Google" />
+        <GoogleAuthButton
+          href={`${API_URL}/auth/start?provider=google`}
+          text="Sign up with Google"
+        />
       </div>
 
       <p className="mt-4 text-center text-sm text-gray-500">

@@ -71,21 +71,6 @@ func (s *MovieService) GetMovieByIDWithGenres(ctx context.Context, id int) (*dom
 }
 
 func (s *MovieService) GetMovieByIDWithGenresAndLike(ctx context.Context, movieID int, userID int) (*domain.MovieWithLike, error) {
-	logger := middleware.GetLogger(ctx)
-
-	// Check Redis cache
-	cacheKey := fmt.Sprintf("movie_with_like:%d:user:%d", movieID, userID)
-
-	cachedMovie, err := s.redisClient.Get(ctx, cacheKey).Result()
-	if err == nil && cachedMovie != "" {
-		var movie domain.MovieWithLike
-		if err := json.Unmarshal([]byte(cachedMovie), &movie); err == nil {
-			logger.Info("Fetched movie from Redis", slog.Int("movie_id", movieID))
-			return &movie, nil
-		}
-	}
-
-	// Fetch from database
 	dbMovie, err := s.movieRepo.GetMovieByID(ctx, movieID)
 	if err != nil {
 		return nil, err
@@ -100,17 +85,25 @@ func (s *MovieService) GetMovieByIDWithGenresAndLike(ctx context.Context, movieI
 	movie := mapDBMovieToDomainMovieWithLike(&dbMovie, isLiked)
 	movie.Genres = mapDBGenresToDomainGenres(genres)
 
-	// Store in Redis with a TTL of 10 minutes
-	movieJSON, _ := json.Marshal(movie)
-	err = s.redisClient.Set(ctx, cacheKey, string(movieJSON), 10*time.Minute).Err()
-	if err != nil {
-		logger.Error("Failed to store movie in Redis", slog.Any("error", err))
-	}
-
 	return movie, nil
 }
 
 func (s *MovieService) ListMoviesWithGenres(ctx context.Context) ([]*domain.Movie, error) {
+	logger := middleware.GetLogger(ctx)
+
+	// Check Redis cache
+	cacheKey := "movies"
+
+	cachedMovies, err := s.redisClient.Get(ctx, cacheKey).Result()
+	if err == nil && cachedMovies != "" {
+		var movies []*domain.Movie
+		if err := json.Unmarshal([]byte(cachedMovies), &movies); err == nil {
+			logger.Info("Fetched movies from Redis")
+			return movies, nil
+		}
+	}
+
+	// Fetch from database
 	rows, err := s.movieRepo.ListMoviesWithGenres(ctx)
 	if err != nil {
 		return nil, err
@@ -150,6 +143,13 @@ func (s *MovieService) ListMoviesWithGenres(ctx context.Context) ([]*domain.Movi
 	movies := make([]*domain.Movie, 0, len(movieMap))
 	for _, movie := range movieMap {
 		movies = append(movies, movie)
+	}
+
+	// Store in Redis with a TTL of 10 minutes
+	movieJSON, _ := json.Marshal(movies)
+	err = s.redisClient.Set(ctx, cacheKey, string(movieJSON), 10*time.Minute).Err()
+	if err != nil {
+		logger.Error("Failed to store movie in Redis", slog.Any("error", err))
 	}
 
 	return movies, nil

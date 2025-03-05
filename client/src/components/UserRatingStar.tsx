@@ -7,7 +7,7 @@ interface UserRatingStarProps {
 export default function UserRatingStar({ rating }: UserRatingStarProps) {
   let fullStars = Math.ceil(rating);
   let hasHalfStar = false;
-  let emptyStars = 5 - fullStars;
+  const emptyStars = 5 - fullStars;
 
   if (fullStars - rating >= 0.5) {
     fullStars -= 1;

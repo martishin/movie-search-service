@@ -1,5 +1,6 @@
+import { describe, expect, test } from "@jest/globals";
+
 import { sum } from "./utils";
-import { describe, test, expect } from "@jest/globals";
 
 describe("Sum function", () => {
   test("Returns correct value", () => {

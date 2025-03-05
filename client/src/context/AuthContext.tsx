@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
+import { createContext, ReactNode, useContext, useEffect, useRef, useState } from "react";
+
+import { API_URL } from "../api";
 
 interface UserDetails {
   id: number;
@@ -23,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserDetails = async () => {
     try {
-      const res = await fetch("/api/users/me", { credentials: "include" });
+      const res = await fetch(`${API_URL}/api/users/me`, { credentials: "include" });
 
       if (!res.ok) {
         throw new Error("Not authenticated");
@@ -48,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await fetch("/auth/logout", { credentials: "include" });
+    await fetch(`${API_URL}/auth/logout`, { credentials: "include" });
     setUserDetails(null);
   };
 

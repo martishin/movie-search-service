@@ -1,12 +1,13 @@
 import { ReactNode, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
 import { FaArrowLeft, FaHeart, FaRegHeart } from "react-icons/fa6";
-import { useAlert } from "../context/AlertContext";
-import { useAuth } from "../context/AuthContext";
+import { useNavigate, useParams } from "react-router";
 
-import Movie from "../models/Movie";
+import { API_URL } from "../api";
 import GenreTag from "../components/GenreTag";
 import UserRatingStar from "../components/UserRatingStar";
+import { useAlert } from "../context/AlertContext";
+import { useAuth } from "../context/AuthContext";
+import Movie from "../models/Movie";
 
 export default function MoviePage(): ReactNode {
   const [movie, setMovie] = useState<Movie | null>(null);
@@ -19,7 +20,9 @@ export default function MoviePage(): ReactNode {
   useEffect(() => {
     const fetchMovie = async () => {
       try {
-        const apiEndpoint = userDetails ? `/api/movies-with-likes/${id}` : `/api/movies/${id}`;
+        const apiEndpoint = userDetails
+          ? `${API_URL}/api/movies-with-likes/${id}`
+          : `${API_URL}/api/movies/${id}`;
         const response = await fetch(apiEndpoint, {
           method: "GET",
           credentials: "include",
@@ -67,7 +70,7 @@ export default function MoviePage(): ReactNode {
     if (!userDetails || !movie) return;
 
     const method = movie.isLiked ? "DELETE" : "POST";
-    const endpoint = `/api/movies/likes/${movie.id}`;
+    const endpoint = `${API_URL}/api/movies/likes/${movie.id}`;
 
     // Optimistic UI update with a proper Movie instance
     setMovie((prev) => {

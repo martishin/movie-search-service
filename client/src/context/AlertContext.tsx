@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, ReactNode } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { createContext, ReactNode, useContext, useState } from "react";
 
 interface AlertContextType {
   showAlert: (message: string) => void;

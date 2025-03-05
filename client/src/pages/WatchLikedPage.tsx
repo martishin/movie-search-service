@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
 import { FaPlay } from "react-icons/fa";
+import { Link } from "react-router";
+
+import { API_URL } from "../api";
+import GenreTag from "../components/GenreTag";
+import UserRatingStar from "../components/UserRatingStar";
 import { useAlert } from "../context/AlertContext";
 import { useAuth } from "../context/AuthContext";
 import Movie from "../models/Movie";
-import GenreTag from "../components/GenreTag";
-import UserRatingStar from "../components/UserRatingStar";
 
 export default function WatchLikedPage() {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -14,7 +16,7 @@ export default function WatchLikedPage() {
   const { userDetails } = useAuth();
 
   useEffect(() => {
-    fetch("/api/movies/likes", { credentials: "include" })
+    fetch(`${API_URL}/api/movies/likes`, { credentials: "include" })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch movies");
         return res.json();

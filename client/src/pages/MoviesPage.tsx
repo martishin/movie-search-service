@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
-import { FaHeart, FaRegHeart } from "react-icons/fa6";
-import { useAlert } from "../context/AlertContext";
-import { useAuth } from "../context/AuthContext";
-import Movie from "../models/Movie";
 import { FaSortAmountDown, FaSortAmountUp } from "react-icons/fa";
-import Genre from "../models/Genre";
+import { FaHeart, FaRegHeart } from "react-icons/fa6";
+import { Link } from "react-router";
+
+import { API_URL } from "../api";
 import GenreTag from "../components/GenreTag";
 import UserRatingStar from "../components/UserRatingStar";
+import { useAlert } from "../context/AlertContext";
+import { useAuth } from "../context/AuthContext";
+import Genre from "../models/Genre";
+import Movie from "../models/Movie";
 
 export default function MoviesPage() {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -22,7 +24,9 @@ export default function MoviesPage() {
   useEffect(() => {
     const fetchMovies = async () => {
       setIsLoading(true);
-      const apiEndpoint = userDetails ? "/api/movies-with-likes" : "/api/movies";
+      const apiEndpoint = userDetails
+        ? `${API_URL}/api/movies-with-likes`
+        : `${API_URL}/api/movies`;
 
       try {
         const response = await fetch(apiEndpoint, { credentials: "include" });
@@ -73,7 +77,7 @@ export default function MoviesPage() {
     if (!userDetails) return;
 
     const method = isLiked ? "DELETE" : "POST";
-    const endpoint = `/api/movies/likes/${movieID}`;
+    const endpoint = `${API_URL}/api/movies/likes/${movieID}`;
 
     setMovies((prevMovies) =>
       prevMovies.map((movie) =>

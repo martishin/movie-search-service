@@ -1,14 +1,15 @@
 import { createBrowserRouter, RouterProvider } from "react-router";
-import App from "./App";
-import ErrorPage from "./ErrorPage";
-import WatchOnlinePage from "./WatchOnlinePage";
+
 import { AlertProvider } from "../context/AlertContext";
 import { AuthProvider } from "../context/AuthContext";
+import App from "./App";
+import ErrorPage from "./ErrorPage";
 import LoginPage from "./LoginPage";
-import SignUpPage from "./SignUpPage";
-import MoviesPage from "./MoviesPage";
 import MoviePage from "./MoviePage";
+import MoviesPage from "./MoviesPage";
+import SignUpPage from "./SignUpPage";
 import WatchLikedPage from "./WatchLikedPage";
+import WatchOnlinePage from "./WatchOnlinePage";
 
 const router = createBrowserRouter([
   {
