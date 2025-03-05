@@ -20,10 +20,13 @@ export default function MoviesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<"title" | "releaseDate" | "userRating">("userRating");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMovies = async () => {
+      if (fetchError) return;
       setIsLoading(true);
+
       const apiEndpoint = userDetails
         ? `${API_URL}/api/movies-with-likes`
         : `${API_URL}/api/movies`;
@@ -34,7 +37,6 @@ export default function MoviesPage() {
 
         const data = await response.json();
 
-        // Ensure correct instantiation of `Movie` class
         const movies = data.map(
           (movie: any) =>
             new Movie(
@@ -55,14 +57,16 @@ export default function MoviesPage() {
         setMovies(movies);
         setFilteredMovies(movies);
       } catch (err: unknown) {
-        showAlert(err instanceof Error ? err.message : "An unknown error occurred");
+        const errorMsg = err instanceof Error ? err.message : "An unknown error occurred";
+        setFetchError(errorMsg);
+        showAlert(errorMsg);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchMovies();
-  }, [userDetails, showAlert]);
+  }, [userDetails]);
 
   const handleSort = (field: "title" | "releaseDate" | "userRating") => {
     if (field === sortField) {

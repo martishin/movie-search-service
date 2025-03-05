@@ -12,8 +12,10 @@ export default function WatchOnlinePage() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { showAlert } = useAlert();
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (fetchError) return;
     fetch(`${API_URL}/api/movies`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch movies");
@@ -47,7 +49,9 @@ export default function WatchOnlinePage() {
         setMovies(sortedMovies);
       })
       .catch((err) => {
-        showAlert(err instanceof Error ? err.message : "An unknown error occurred");
+        const errorMsg = err instanceof Error ? err.message : "An unknown error occurred";
+        setFetchError(errorMsg);
+        showAlert(errorMsg);
       })
       .finally(() => setIsLoading(false));
   }, [showAlert]);
@@ -56,7 +60,9 @@ export default function WatchOnlinePage() {
     <div className="px-6 sm:px-8 lg:px-10">
       <h1 className="text-xl font-semibold text-gray-900">Watch Online</h1>
       <p className="mt-2 text-sm text-gray-600">Select a movie to watch.</p>
-      {isLoading ? null : ( // <p className="mt-6 text-center text-gray-500">Loading movies...</p>
+      {isLoading ? null : movies.length === 0 ? ( // <p className="mt-6 text-center text-gray-500">Loading movies...</p>
+        <p className="mt-6 text-center text-gray-500">No movies found.</p>
+      ) : (
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5">
           {movies.map((movie) => (
             <Link
