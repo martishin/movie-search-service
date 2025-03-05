@@ -1,30 +1,4 @@
 services:
-    server:
-        image: movie-search-server
-        build:
-            context: ..
-            dockerfile: Dockerfile
-            args:
-                TARGETOS: ${TARGETOS:-darwin}
-                TARGETARCH: ${TARGETARCH:-arm64}
-        restart: on-failure
-        environment:
-            PORT: ${PORT}
-            POSTGRES_HOST: db
-            POSTGRES_PORT: ${POSTGRES_PORT}
-            POSTGRES_DATABASE: ${POSTGRES_DATABASE}
-            POSTGRES_USERNAME: ${POSTGRES_USERNAME}
-            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-            GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-            GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-            GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
-            REDIRECT_URL: ${REDIRECT_URL}
-            SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN}
-            ENV: ${ENV}
-            SESSION_SECRET: ${SESSION_SECRET}
-        ports:
-            - "8100:8100"
-
     postgres:
         image: postgres:latest
         restart: always

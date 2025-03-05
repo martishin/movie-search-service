@@ -55,23 +55,16 @@ func ReadGoogleOauthConfig() (*config.OAuthConfig, error) {
 
 func ReadPostgresConfig() (*config.PostgresConfig, error) {
 	host := os.Getenv("POSTGRES_HOST")
-	portStr := os.Getenv("POSTGRES_PORT")
 	database := os.Getenv("POSTGRES_DATABASE")
 	username := os.Getenv("POSTGRES_USERNAME")
 	password := os.Getenv("POSTGRES_PASSWORD")
 
-	if host == "" || portStr == "" || database == "" || username == "" || password == "" {
+	if host == "" || database == "" || username == "" || password == "" {
 		return nil, fmt.Errorf("missing required PostgreSQL environment variables")
-	}
-
-	port, err := strconv.Atoi(portStr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid POSTGRES_PORT: %v", err)
 	}
 
 	return &config.PostgresConfig{
 		Host:     host,
-		Port:     port,
 		Database: database,
 		Username: username,
 		Password: password,

@@ -26,7 +26,6 @@ variable "environment_variables" {
   type = map(string)
   default = {
     PORT                  = "8100"
-    POSTGRES_PORT         = "5432"
     POSTGRES_DATABASE     = "moviesearch"
     POSTGRES_USERNAME     = "posgres"
     REDIS_PORT            = "6379"

@@ -60,10 +60,6 @@ resource "aws_ecs_task_definition" "app_task" {
           value = aws_db_instance.postgres.endpoint
         },
         {
-          name  = "POSTGRES_PORT"
-          value = var.environment_variables["POSTGRES_PORT"]
-        },
-        {
           name  = "POSTGRES_DATABASE"
           value = var.environment_variables["POSTGRES_DATABASE"]
         },
