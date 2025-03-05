@@ -205,7 +205,7 @@ export default function MoviesPage() {
       {/* Page Header & Search */}
       <div className="sm:flex sm:flex-col sm:items-start">
         <div className="sm:flex-auto">
-          <h1 className="text-xl font-semibold text-gray-900">Movies</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Movie List</h1>
           <p className="mt-2 text-sm text-gray-600">
             Browse a collection of movies and view details.
           </p>

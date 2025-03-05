@@ -58,7 +58,7 @@ export default function WatchOnlinePage() {
 
   return (
     <div className="px-6 sm:px-8 lg:px-10">
-      <h1 className="text-xl font-semibold text-gray-900">Watch Online</h1>
+      <h1 className="text-xl font-semibold text-gray-900">Watch Movies Online</h1>
       <p className="mt-2 text-sm text-gray-600">Select a movie to watch.</p>
       {isLoading ? null : movies.length === 0 ? ( // <p className="mt-6 text-center text-gray-500">Loading movies...</p>
         <p className="mt-6 text-center text-gray-500">No movies found.</p>
