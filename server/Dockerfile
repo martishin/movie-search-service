@@ -23,6 +23,9 @@ WORKDIR /app
 # Copy built binary
 COPY --from=builder /app/server /app/server
 
+# Copy migrations directory
+COPY --from=builder /app/migrations /app/migrations
+
 # Ensure binary has execution permission
 RUN chmod +x /app/server
 
