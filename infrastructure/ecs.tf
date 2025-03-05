@@ -61,7 +61,7 @@ resource "aws_ecs_task_definition" "app_task" {
         },
         {
           name  = "POSTGRES_PORT"
-          value = var.environment_variables["GOOGLE_CALLBACK_URL"]
+          value = var.environment_variables["POSTGRES_PORT"]
         },
         {
           name  = "POSTGRES_DATABASE"
