@@ -26,6 +26,11 @@ variable "environment_variables" {
   type = map(string)
   default = {
     PORT                  = "8100"
+    POSTGRES_PORT         = "5432"
+    POSTGRES_DATABASE     = "moviesearch"
+    POSTGRES_USERNAME     = "posgres"
+    REDIS_PORT            = "6379"
+    REDIS_DB              = "0"
     GOOGLE_CALLBACK_URL   = "https://ms-api.martishin.com/auth/callback?provider=google"
     REDIRECT_URL          = "https://ms.martishin.com/"
     SESSION_COOKIE_DOMAIN = ".martishin.com"

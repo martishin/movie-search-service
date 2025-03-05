@@ -113,3 +113,50 @@ resource "aws_iam_role_policy_attachment" "ecs_task_policy" {
   role       = aws_iam_role.ecs_task_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
 }
+
+resource "aws_iam_policy" "ecs_postgres_access" {
+  name        = "${var.app_name}-postgres-access"
+  description = "Allows ECS tasks to connect to PostgreSQL"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "rds-db:connect"
+        ]
+        Resource = "arn:aws:rds-db:us-east-1:100381574725:db:${aws_db_instance.postgres.identifier}"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_postgres_access" {
+  role       = aws_iam_role.ecs_task_role.name
+  policy_arn = aws_iam_policy.ecs_postgres_access.arn
+}
+
+resource "aws_iam_policy" "ecs_redis_access" {
+  name        = "${var.app_name}-redis-access"
+  description = "Allows ECS tasks to connect to ElastiCache Redis"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "elasticache:DescribeCacheClusters",
+          "elasticache:ListTagsForResource"
+        ]
+        Resource = "arn:aws:elasticache:us-east-1:100381574725:cluster/${aws_elasticache_cluster.redis.id}"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_redis_access" {
+  role       = aws_iam_role.ecs_task_role.name
+  policy_arn = aws_iam_policy.ecs_redis_access.arn
+}

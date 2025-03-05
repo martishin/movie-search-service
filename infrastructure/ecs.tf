@@ -56,6 +56,34 @@ resource "aws_ecs_task_definition" "app_task" {
       ],
       environment = [
         {
+          name  = "POSTGRES_HOST"
+          value = aws_db_instance.postgres.endpoint
+        },
+        {
+          name  = "POSTGRES_PORT"
+          value = var.environment_variables["GOOGLE_CALLBACK_URL"]
+        },
+        {
+          name  = "POSTGRES_DATABASE"
+          value = var.environment_variables["POSTGRES_DATABASE"]
+        },
+        {
+          name  = "POSTGRES_USERNAME"
+          value = var.environment_variables["POSTGRES_USERNAME"]
+        },
+        {
+          name  = "REDIS_HOST"
+          value = aws_elasticache_cluster.redis.cache_nodes[0].address
+        },
+        {
+          name  = "REDIS_PORT"
+          value = var.environment_variables["REDIS_PORT"]
+        },
+        {
+          name  = "REDIS_DB"
+          value = var.environment_variables["REDIS_DB"]
+        },
+        {
           name  = "GOOGLE_CALLBACK_URL"
           value = var.environment_variables["GOOGLE_CALLBACK_URL"]
         },
@@ -79,17 +107,21 @@ resource "aws_ecs_task_definition" "app_task" {
       secrets = [
         {
           name      = "GOOGLE_CLIENT_ID"
-          valueFrom = data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn
+          valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:GOOGLE_CLIENT_ID::"
         },
         {
           name      = "GOOGLE_CLIENT_SECRET"
-          valueFrom = data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn
+          valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:GOOGLE_CLIENT_SECRET::"
         },
         {
           name      = "SESSION_SECRET"
-          valueFrom = data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn
+          valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:SESSION_SECRET::"
+        },
+        {
+          name      = "POSTGRES_PASSWORD"
+          valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:POSTGRES_PASSWORD::"
         }
-      ],
+      ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
