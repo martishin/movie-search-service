@@ -13,9 +13,9 @@ type MovieRepository struct {
 	queries *db.Queries
 }
 
-func NewMovieRepository(pool *pgxpool.Pool) *MovieRepository {
+func NewMovieRepository(postgresPool *pgxpool.Pool) *MovieRepository {
 	return &MovieRepository{
-		queries: db.New(pool),
+		queries: db.New(postgresPool),
 	}
 }
 

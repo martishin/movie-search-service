@@ -1,11 +1,11 @@
 run:
 	go run cmd/api/main.go
 
-run-postgres:
-	docker compose up postgres
+run-dependencies:
+	docker compose up postgres redis
 
-stop-postgres:
-	docker compose down postgres
+stop-dependencies:
+	docker compose down postgres redis
 
 generate-sql:
 	sqlc generate

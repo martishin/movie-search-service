@@ -17,12 +17,35 @@ export default function WatchOnlinePage() {
         if (!res.ok) throw new Error("Failed to fetch movies");
         return res.json();
       })
-      .then((data: Movie[]) => {
-        const sortedMovies = data.sort((a, b) => b.user_rating - a.user_rating);
+      .then((data: any[]) => {
+        const movies = data.map(
+          (movie) =>
+            new Movie(
+              movie.id,
+              movie.title,
+              movie.release_date,
+              movie.runtime,
+              movie.mpaa_rating,
+              movie.description,
+              movie.image,
+              movie.video,
+              movie.genres ?? [],
+              movie.user_rating ?? 0,
+              movie.is_liked ?? false,
+            ),
+        );
+
+        // Sort by userRating (highest first)
+        const sortedMovies = [...movies].sort((a, b) => {
+          if (b.userRating !== a.userRating) {
+            return b.userRating - a.userRating;
+          }
+          return a.id - b.id;
+        });
         setMovies(sortedMovies);
       })
       .catch((err) => {
-        showAlert(err.message);
+        showAlert(err instanceof Error ? err.message : "An unknown error occurred");
       })
       .finally(() => setIsLoading(false));
   }, [showAlert]);
@@ -31,9 +54,7 @@ export default function WatchOnlinePage() {
     <div className="px-6 sm:px-8 lg:px-10">
       <h1 className="text-xl font-semibold text-gray-900">Watch Online</h1>
       <p className="mt-2 text-sm text-gray-600">Select a movie to watch.</p>
-      {isLoading ? (
-        <p className="mt-6 text-center text-gray-500">Loading movies...</p>
-      ) : (
+      {isLoading ? null : ( // <p className="mt-6 text-center text-gray-500">Loading movies...</p>
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5">
           {movies.map((movie) => (
             <Link
@@ -42,7 +63,7 @@ export default function WatchOnlinePage() {
               className="group relative overflow-hidden rounded-lg shadow-md transition-transform hover:scale-105"
             >
               <img
-                src={`https://image.tmdb.org/t/p/w400/${movie.image}`}
+                src={movie.formattedImage}
                 alt={movie.title}
                 className="h-full w-full object-cover"
               />
@@ -52,7 +73,7 @@ export default function WatchOnlinePage() {
                     <GenreTag key={genre.id} genre={genre} />
                   ))}
                 </div>
-                <UserRatingStar rating={movie.user_rating} />
+                <UserRatingStar rating={movie.userRating} />
                 <FaPlay className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl text-white opacity-90" />
               </div>
             </Link>

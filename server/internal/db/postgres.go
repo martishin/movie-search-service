@@ -8,7 +8,7 @@ import (
 	"github.com/martishin/movie-search-service/internal/model/config"
 )
 
-func ConnectPostgresPool(config *config.PostgresConfig) (*pgxpool.Pool, error) {
+func NewPostgresPool(config *config.PostgresConfig) (*pgxpool.Pool, error) {
 	ctx := context.Background()
 	pool, err := pgxpool.New(ctx, config.DSN())
 	if err != nil {

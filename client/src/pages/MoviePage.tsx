@@ -28,16 +28,22 @@ export default function MoviePage(): ReactNode {
 
         if (!response.ok) throw new Error("Failed to fetch movie");
 
-        const data: Movie = await response.json();
-        const formattedMovie = {
-          ...data,
-          release_date: new Date(data.release_date).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          }),
-          is_liked: data.is_liked ?? false, // Ensure is_liked exists
-        };
+        const data = await response.json();
+
+        const formattedMovie = new Movie(
+          data.id,
+          data.title,
+          data.release_date,
+          data.runtime,
+          data.mpaa_rating,
+          data.description,
+          data.image,
+          data.video,
+          data.genres ?? [],
+          data.user_rating ?? 0,
+          data.is_liked ?? false,
+        );
+
         setMovie(formattedMovie);
       } catch (error) {
         showAlert(error instanceof Error ? error.message : "An unknown error occurred");
@@ -60,11 +66,26 @@ export default function MoviePage(): ReactNode {
   const toggleLike = async () => {
     if (!userDetails || !movie) return;
 
-    const method = movie.is_liked ? "DELETE" : "POST";
+    const method = movie.isLiked ? "DELETE" : "POST";
     const endpoint = `/api/movies/likes/${movie.id}`;
 
-    // Optimistic UI update
-    setMovie((prev) => (prev ? { ...prev, is_liked: !prev.is_liked } : prev));
+    // Optimistic UI update with a proper Movie instance
+    setMovie((prev) => {
+      if (!prev) return null;
+      return new Movie(
+        prev.id,
+        prev.title,
+        prev.releaseDate,
+        prev.runtime,
+        prev.mpaaRating,
+        prev.description,
+        prev.image,
+        prev.video,
+        prev.genres,
+        prev.userRating,
+        !prev.isLiked, // Toggle like state
+      );
+    });
 
     try {
       const response = await fetch(endpoint, {
@@ -73,12 +94,27 @@ export default function MoviePage(): ReactNode {
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok) throw new Error(`Failed to ${movie.is_liked ? "unlike" : "like"} movie`);
+      if (!response.ok) throw new Error(`Failed to ${movie.isLiked ? "unlike" : "like"} movie`);
     } catch (error) {
       showAlert(error instanceof Error ? error.message : "An unknown error occurred");
 
       // Revert UI update if request fails
-      setMovie((prev) => (prev ? { ...prev, is_liked: !prev.is_liked } : prev));
+      setMovie((prev) => {
+        if (!prev) return null;
+        return new Movie(
+          prev.id,
+          prev.title,
+          prev.releaseDate,
+          prev.runtime,
+          prev.mpaaRating,
+          prev.description,
+          prev.image,
+          prev.video,
+          prev.genres,
+          prev.userRating,
+          !prev.isLiked, // Revert like state
+        );
+      });
     }
   };
 
@@ -90,76 +126,75 @@ export default function MoviePage(): ReactNode {
       >
         <FaArrowLeft className="h-5 w-5" /> Back
       </button>
-      {isFetchingMovie ? (
-        <p className="mt-4 text-center text-gray-500">Loading movie...</p>
-      ) : (
-        movie && (
-          <div className="mt-6 flex flex-col gap-6 md:flex-row">
-            {movie.image && (
-              <div className="w-40 flex-shrink-0 md:w-48">
-                <img
-                  src={`https://image.tmdb.org/t/p/w400/${movie.image}`}
-                  alt={movie.title}
-                  className="h-auto w-full rounded shadow-md"
-                />
+      {isFetchingMovie
+        ? // <p className="mt-4 text-center text-gray-500">Loading movie...</p>
+          null
+        : movie && (
+            <div className="mt-6 flex flex-col gap-6 md:flex-row">
+              {movie.image && (
+                <div className="w-40 flex-shrink-0 md:w-48">
+                  <img
+                    src={movie.formattedImage}
+                    alt={movie.title}
+                    className="h-auto w-full rounded shadow-md"
+                  />
+                </div>
+              )}
+              <div className="flex-1 space-y-2 text-gray-900">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-2xl font-bold tracking-tight">{movie.title}</h3>
+                  {userDetails && (
+                    <button onClick={toggleLike} className="cursor-pointer">
+                      {movie.isLiked ? (
+                        <FaHeart size={20} className="text-red-500" />
+                      ) : (
+                        <FaRegHeart size={20} />
+                      )}
+                    </button>
+                  )}
+                </div>
+                <p className="flex items-center gap-2 font-semibold">
+                  <span className="text-gray-700">User Rating:</span>
+                  <UserRatingStar rating={movie.userRating} />
+                </p>
+                <p className="flex items-center gap-2 font-semibold">
+                  <span className="text-gray-700">Genres:</span>
+                  <span className="flex flex-wrap gap-2">
+                    {movie.genres
+                      .sort((a, b) => a.genre.localeCompare(b.genre))
+                      .map((g) => (
+                        <GenreTag key={g.id} genre={g} />
+                      ))}
+                  </span>
+                </p>
+                <p className="font-semibold">
+                  <span className="text-gray-700">Release Date:</span>
+                  <span className="font-normal"> {movie.formattedReleaseDate}</span>
+                </p>
+                <p className="font-semibold">
+                  <span className="text-gray-700">Length:</span>
+                  <span className="font-normal"> {movie.runtime} minutes</span>
+                </p>
+                <p className="font-semibold">
+                  <span className="text-gray-700">MPAA Rating:</span>
+                  <span className="font-normal"> {movie.mpaaRating}</span>
+                </p>
               </div>
-            )}
-            <div className="flex-1 space-y-2 text-gray-900">
-              <div className="flex items-center gap-2">
-                <h3 className="text-2xl font-bold tracking-tight">{movie.title}</h3>
-                {userDetails && (
-                  <button onClick={toggleLike} className="cursor-pointer">
-                    {movie.is_liked ? (
-                      <FaHeart size={20} className="text-red-500" />
-                    ) : (
-                      <FaRegHeart size={20} />
-                    )}
-                  </button>
-                )}
-              </div>
-              <p className="flex items-center gap-2 font-semibold">
-                <span className="text-gray-700">User Rating:</span>
-                <UserRatingStar rating={movie.user_rating} />
-              </p>
-              <p className="flex items-center gap-2 font-semibold">
-                <span className="text-gray-700">Genres:</span>
-                <span className="flex flex-wrap gap-2">
-                  {movie.genres
-                    .sort((a, b) => a.genre.localeCompare(b.genre))
-                    .map((g) => (
-                      <GenreTag key={g.id} genre={g} />
-                    ))}
-                </span>
-              </p>
-              <p className="font-semibold">
-                <span className="text-gray-700">Release Date:</span>
-                <span className="font-normal"> {movie.release_date}</span>
-              </p>
-              <p className="font-semibold">
-                <span className="text-gray-700">Length:</span>
-                <span className="font-normal"> {movie.runtime} minutes</span>
-              </p>
-              <p className="font-semibold">
-                <span className="text-gray-700">MPAA Rating:</span>
-                <span className="font-normal"> {movie.mpaa_rating}</span>
-              </p>
             </div>
-          </div>
-        )
-      )}
+          )}
       {movie && (
         <div className="mt-6">
           <h4 className="text-lg font-semibold text-gray-900">Description</h4>
           <p className="leading-relaxed text-gray-800">{movie.description}</p>
         </div>
       )}
-      {movie?.video && (
+      {movie?.formattedVideo && (
         <div className="mt-6 flex justify-start">
           <div className="aspect-w-16 aspect-h-9 relative w-full max-w-2xl">
             <iframe
               className="h-64 w-full md:h-96"
-              src={`${movie.video}`}
-              title={`${movie.title}`}
+              src={movie.formattedVideo}
+              title={movie.title}
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen

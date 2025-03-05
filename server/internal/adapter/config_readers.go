@@ -77,3 +77,19 @@ func ReadPostgresConfig() (*config.PostgresConfig, error) {
 		Password: password,
 	}, nil
 }
+
+func ReadRedisConfig() (*config.RedisConfig, error) {
+	host := os.Getenv("REDIS_HOST")
+	port := os.Getenv("REDIS_PORT")
+	db, err := strconv.Atoi(os.Getenv("REDIS_DB"))
+
+	if err != nil {
+		return nil, fmt.Errorf("invalid REDIS_PORT: %v", err)
+	}
+
+	return &config.RedisConfig{
+		Host: host,
+		Port: port,
+		DB:   db,
+	}, nil
+}

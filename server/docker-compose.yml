@@ -1,6 +1,6 @@
 services:
     server:
-        image: news-service-server
+        image: movie-search-server
         build:
             context: ..
             dockerfile: Dockerfile
@@ -36,6 +36,12 @@ services:
             - '5432:5432'
         volumes:
             - postgres_data:/var/lib/postgresql/data
+
+    redis:
+        image: redis:latest
+        restart: always
+        ports:
+            - "6379:6379"
 
 volumes:
     postgres_data:

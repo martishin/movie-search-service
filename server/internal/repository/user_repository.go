@@ -12,9 +12,9 @@ type UserRepository struct {
 	queries *db.Queries
 }
 
-func NewUserRepository(pool *pgxpool.Pool) *UserRepository {
+func NewUserRepository(postgresPool *pgxpool.Pool) *UserRepository {
 	return &UserRepository{
-		queries: db.New(pool),
+		queries: db.New(postgresPool),
 	}
 }
 

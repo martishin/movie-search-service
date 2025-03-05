@@ -11,6 +11,7 @@ import (
 	"github.com/martishin/movie-search-service/internal/repository"
 	"github.com/martishin/movie-search-service/internal/route"
 	"github.com/martishin/movie-search-service/internal/service"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/gorilla/sessions"
 	"github.com/markbates/goth"
@@ -37,14 +38,20 @@ func configureGoogleOauth(config *config.OAuthConfig) {
 	)
 }
 
-func NewServer(logger *slog.Logger, pool *pgxpool.Pool, serverConfig *config.ServerConfig, oauthConfig *config.OAuthConfig) *http.Server {
+func NewServer(
+	logger *slog.Logger,
+	postgresPool *pgxpool.Pool,
+	redisClient *redis.Client,
+	serverConfig *config.ServerConfig,
+	oauthConfig *config.OAuthConfig,
+) *http.Server {
 	// Initialize repositories
-	userRepo := repository.NewUserRepository(pool)
-	movieRepo := repository.NewMovieRepository(pool)
+	userRepo := repository.NewUserRepository(postgresPool)
+	movieRepo := repository.NewMovieRepository(postgresPool)
 
 	// Initialise services
 	userService := service.NewUserService(userRepo)
-	movieService := service.NewMovieService(movieRepo)
+	movieService := service.NewMovieService(movieRepo, redisClient)
 
 	// Initialize handlers
 	userHandler := handler.NewUserHandler(userService)

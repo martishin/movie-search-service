@@ -2,75 +2,128 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"log/slog"
+	"time"
 
 	db "github.com/martishin/movie-search-service/internal/db/generated"
+	"github.com/martishin/movie-search-service/internal/middleware"
 	"github.com/martishin/movie-search-service/internal/model/domain"
 	"github.com/martishin/movie-search-service/internal/repository"
+	"github.com/redis/go-redis/v9"
 )
 
 type MovieService struct {
-	movieRepo *repository.MovieRepository
+	movieRepo   *repository.MovieRepository
+	redisClient *redis.Client
 }
 
-func NewMovieService(movieRepo *repository.MovieRepository) *MovieService {
-	return &MovieService{movieRepo: movieRepo}
+func NewMovieService(movieRepo *repository.MovieRepository, redisClient *redis.Client) *MovieService {
+	return &MovieService{movieRepo: movieRepo, redisClient: redisClient}
 }
 
-func (s *MovieService) CreateMovie(ctx context.Context, movie domain.Movie) (domain.Movie, error) {
+func (s *MovieService) CreateMovie(ctx context.Context, movie domain.Movie) (*domain.Movie, error) {
 	dbMovie, err := s.movieRepo.CreateMovie(ctx, movie)
 	if err != nil {
-		return domain.Movie{}, err
+		return nil, err
 	}
-	return mapDBMovieToDomainMovie(dbMovie), nil
+	return mapDBMovieToDomainMovie(&dbMovie), nil
 }
 
-func (s *MovieService) GetMovieByIDWithGenres(ctx context.Context, id int) (domain.Movie, error) {
+func (s *MovieService) GetMovieByIDWithGenres(ctx context.Context, id int) (*domain.Movie, error) {
+	logger := middleware.GetLogger(ctx)
+
+	// Check Redis cache
+	cacheKey := fmt.Sprintf("movie:%d", id)
+
+	cachedMovie, err := s.redisClient.Get(ctx, cacheKey).Result()
+	if err == nil && cachedMovie != "" {
+		var movie domain.Movie
+		if err := json.Unmarshal([]byte(cachedMovie), &movie); err == nil {
+			logger.Info("Fetched movie from Redis", slog.Int("movie_id", id))
+			return &movie, nil
+		}
+	}
+
+	// Fetch from database
 	dbMovie, err := s.movieRepo.GetMovieByID(ctx, id)
 	if err != nil {
-		return domain.Movie{}, err
+		return nil, err
 	}
 
 	genres, err := s.movieRepo.ListGenresByMovieID(ctx, id)
 	if err != nil {
-		return domain.Movie{}, err
+		return nil, err
 	}
 
-	movie := mapDBMovieToDomainMovie(dbMovie)
+	movie := mapDBMovieToDomainMovie(&dbMovie)
 	movie.Genres = mapDBGenresToDomainGenres(genres)
+
+	// Store in Redis with a TTL of 10 minutes
+	movieJSON, _ := json.Marshal(movie)
+	err = s.redisClient.Set(ctx, cacheKey, string(movieJSON), 10*time.Minute).Err()
+	if err != nil {
+		logger.Error("Failed to store movie in Redis", slog.Any("error", err))
+	}
+
 	return movie, nil
 }
 
-func (s *MovieService) GetMovieByIDWithGenresAndLike(ctx context.Context, movieID int, userID int) (domain.MovieWithLike, error) {
+func (s *MovieService) GetMovieByIDWithGenresAndLike(ctx context.Context, movieID int, userID int) (*domain.MovieWithLike, error) {
+	logger := middleware.GetLogger(ctx)
+
+	// Check Redis cache
+	cacheKey := fmt.Sprintf("movie_with_like:%d:user:%d", movieID, userID)
+
+	cachedMovie, err := s.redisClient.Get(ctx, cacheKey).Result()
+	if err == nil && cachedMovie != "" {
+		var movie domain.MovieWithLike
+		if err := json.Unmarshal([]byte(cachedMovie), &movie); err == nil {
+			logger.Info("Fetched movie from Redis", slog.Int("movie_id", movieID))
+			return &movie, nil
+		}
+	}
+
+	// Fetch from database
 	dbMovie, err := s.movieRepo.GetMovieByID(ctx, movieID)
 	if err != nil {
-		return domain.MovieWithLike{}, err
+		return nil, err
 	}
 
 	genres, err := s.movieRepo.ListGenresByMovieID(ctx, movieID)
 	if err != nil {
-		return domain.MovieWithLike{}, err
+		return nil, err
 	}
 
 	isLiked, err := s.movieRepo.IsMovieLikedByUser(ctx, movieID, userID)
-	movie := mapDBMovieToDomainMovieWithLike(dbMovie, isLiked)
+	movie := mapDBMovieToDomainMovieWithLike(&dbMovie, isLiked)
 	movie.Genres = mapDBGenresToDomainGenres(genres)
+
+	// Store in Redis with a TTL of 10 minutes
+	movieJSON, _ := json.Marshal(movie)
+	err = s.redisClient.Set(ctx, cacheKey, string(movieJSON), 10*time.Minute).Err()
+	if err != nil {
+		logger.Error("Failed to store movie in Redis", slog.Any("error", err))
+	}
+
 	return movie, nil
 }
 
-func (s *MovieService) ListMoviesWithGenres(ctx context.Context) ([]domain.Movie, error) {
+func (s *MovieService) ListMoviesWithGenres(ctx context.Context) ([]*domain.Movie, error) {
 	rows, err := s.movieRepo.ListMoviesWithGenres(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	movieMap := make(map[int]domain.Movie)
+	movieMap := make(map[int]*domain.Movie)
 
 	for _, row := range rows {
 		movieID := int(row.MovieID)
 		movie, exists := movieMap[movieID]
 		userRating, _ := row.UserRating.Float64Value()
 		if !exists {
-			movie = domain.Movie{
+			movie = &domain.Movie{
 				ID:          movieID,
 				Title:       row.Title,
 				ReleaseDate: row.ReleaseDate.Time,
@@ -94,7 +147,7 @@ func (s *MovieService) ListMoviesWithGenres(ctx context.Context) ([]domain.Movie
 		movieMap[movieID] = movie
 	}
 
-	movies := make([]domain.Movie, 0, len(movieMap))
+	movies := make([]*domain.Movie, 0, len(movieMap))
 	for _, movie := range movieMap {
 		movies = append(movies, movie)
 	}
@@ -125,10 +178,10 @@ func (s *MovieService) UpdateMovieGenres(ctx context.Context, movieID int, genre
 	return nil
 }
 
-func mapDBMovieToDomainMovie(dbMovie db.Movie) domain.Movie {
+func mapDBMovieToDomainMovie(dbMovie *db.Movie) *domain.Movie {
 	userRating, _ := dbMovie.UserRating.Float64Value()
 
-	return domain.Movie{
+	return &domain.Movie{
 		ID:          int(dbMovie.ID),
 		Title:       dbMovie.Title,
 		ReleaseDate: dbMovie.ReleaseDate.Time,
@@ -141,10 +194,10 @@ func mapDBMovieToDomainMovie(dbMovie db.Movie) domain.Movie {
 	}
 }
 
-func mapDBMovieToDomainMovieWithLike(dbMovie db.Movie, isLiked bool) domain.MovieWithLike {
+func mapDBMovieToDomainMovieWithLike(dbMovie *db.Movie, isLiked bool) *domain.MovieWithLike {
 	userRating, _ := dbMovie.UserRating.Float64Value()
 
-	return domain.MovieWithLike{
+	return &domain.MovieWithLike{
 		ID:          int(dbMovie.ID),
 		Title:       dbMovie.Title,
 		ReleaseDate: dbMovie.ReleaseDate.Time,
@@ -169,28 +222,28 @@ func mapDBGenresToDomainGenres(dbGenres []db.Genre) []*domain.Genre {
 	return genres
 }
 
-func (s *MovieService) ListMoviesByGenre(ctx context.Context, genreID int) ([]domain.Movie, error) {
+func (s *MovieService) ListMoviesByGenre(ctx context.Context, genreID int) ([]*domain.Movie, error) {
 	dbMovies, err := s.movieRepo.ListMoviesByGenre(ctx, genreID)
 	if err != nil {
 		return nil, err
 	}
 
-	var movies []domain.Movie
+	var movies []*domain.Movie
 	for _, dbMovie := range dbMovies {
-		movies = append(movies, mapDBMovieToDomainMovie(dbMovie))
+		movies = append(movies, mapDBMovieToDomainMovie(&dbMovie))
 	}
 	return movies, nil
 }
 
-func (s *MovieService) ListGenres(ctx context.Context) ([]domain.Genre, error) {
+func (s *MovieService) ListGenres(ctx context.Context) ([]*domain.Genre, error) {
 	dbGenres, err := s.movieRepo.ListGenres(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var genres []domain.Genre
+	var genres []*domain.Genre
 	for _, dbGenre := range dbGenres {
-		genres = append(genres, domain.Genre{
+		genres = append(genres, &domain.Genre{
 			ID:    int(dbGenre.ID),
 			Genre: dbGenre.Genre,
 		})
@@ -198,13 +251,13 @@ func (s *MovieService) ListGenres(ctx context.Context) ([]domain.Genre, error) {
 	return genres, nil
 }
 
-func (s *MovieService) ListMoviesWithGenresAndLikes(ctx context.Context, userID int) ([]domain.MovieWithLike, error) {
+func (s *MovieService) ListMoviesWithGenresAndLikes(ctx context.Context, userID int) ([]*domain.MovieWithLike, error) {
 	dbMovies, err := s.movieRepo.ListMoviesWithGenresAndLikes(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	movieMap := make(map[int]domain.MovieWithLike)
+	movieMap := make(map[int]*domain.MovieWithLike)
 
 	for _, row := range dbMovies {
 		movieID := int(row.MovieID)
@@ -212,7 +265,7 @@ func (s *MovieService) ListMoviesWithGenresAndLikes(ctx context.Context, userID 
 		userRating, _ := row.UserRating.Float64Value()
 
 		if !exists {
-			movie = domain.MovieWithLike{
+			movie = &domain.MovieWithLike{
 				ID:          movieID,
 				Title:       row.Title,
 				ReleaseDate: row.ReleaseDate.Time,
@@ -238,7 +291,7 @@ func (s *MovieService) ListMoviesWithGenresAndLikes(ctx context.Context, userID 
 	}
 
 	// Convert map to slice
-	movies := make([]domain.MovieWithLike, 0, len(movieMap))
+	movies := make([]*domain.MovieWithLike, 0, len(movieMap))
 	for _, movie := range movieMap {
 		movies = append(movies, movie)
 	}

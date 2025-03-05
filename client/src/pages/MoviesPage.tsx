@@ -16,9 +16,7 @@ export default function MoviesPage() {
   const { showAlert } = useAlert();
   const { userDetails } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortField, setSortField] = useState<
-    "title" | "release_date" | "mpaa_rating" | "user_rating"
-  >("user_rating");
+  const [sortField, setSortField] = useState<"title" | "releaseDate" | "userRating">("userRating");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
@@ -31,23 +29,29 @@ export default function MoviesPage() {
         if (!response.ok) throw new Error("Failed to fetch movies");
 
         const data = await response.json();
-        const formattedMovies = data.map((movie: Movie) => ({
-          ...movie,
-          release_date: new Date(movie.release_date).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          }),
-        }));
 
-        setMovies(formattedMovies);
-        setFilteredMovies(formattedMovies);
+        // Ensure correct instantiation of `Movie` class
+        const movies = data.map(
+          (movie: any) =>
+            new Movie(
+              movie.id,
+              movie.title,
+              movie.release_date,
+              movie.runtime,
+              movie.mpaa_rating,
+              movie.description,
+              movie.image,
+              movie.video,
+              movie.genres ?? [],
+              movie.user_rating ?? 0,
+              movie.is_liked ?? false,
+            ),
+        );
+
+        setMovies(movies);
+        setFilteredMovies(movies);
       } catch (err: unknown) {
-        if (err instanceof Error) {
-          showAlert(err.message);
-        } else {
-          showAlert("An unknown error occurred");
-        }
+        showAlert(err instanceof Error ? err.message : "An unknown error occurred");
       } finally {
         setIsLoading(false);
       }
@@ -56,7 +60,7 @@ export default function MoviesPage() {
     fetchMovies();
   }, [userDetails, showAlert]);
 
-  const handleSort = (field: "title" | "release_date" | "mpaa_rating" | "user_rating") => {
+  const handleSort = (field: "title" | "releaseDate" | "userRating") => {
     if (field === sortField) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
@@ -71,9 +75,24 @@ export default function MoviesPage() {
     const method = isLiked ? "DELETE" : "POST";
     const endpoint = `/api/movies/likes/${movieID}`;
 
-    // Optimistic UI update
     setMovies((prevMovies) =>
-      prevMovies.map((movie) => (movie.id === movieID ? { ...movie, is_liked: !isLiked } : movie)),
+      prevMovies.map((movie) =>
+        movie.id === movieID
+          ? new Movie(
+              movie.id,
+              movie.title,
+              movie.releaseDate,
+              movie.runtime,
+              movie.mpaaRating,
+              movie.description,
+              movie.image,
+              movie.video,
+              movie.genres,
+              movie.userRating,
+              !isLiked,
+            )
+          : movie,
+      ),
     );
 
     try {
@@ -87,33 +106,59 @@ export default function MoviesPage() {
 
       setFilteredMovies((prevMovies) =>
         prevMovies.map((movie) =>
-          movie.id === movieID ? { ...movie, is_liked: !isLiked } : movie,
+          movie.id === movieID
+            ? new Movie(
+                movie.id,
+                movie.title,
+                movie.releaseDate,
+                movie.runtime,
+                movie.mpaaRating,
+                movie.description,
+                movie.image,
+                movie.video,
+                movie.genres,
+                movie.userRating,
+                !isLiked,
+              )
+            : movie,
         ),
       );
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        showAlert(err.message);
-      } else {
-        showAlert("An unknown error occurred");
-      }
-      // Revert the UI update if the request fails
+      showAlert(err instanceof Error ? err.message : "An unknown error occurred");
+
       setMovies((prevMovies) =>
-        prevMovies.map((movie) => (movie.id === movieID ? { ...movie, is_liked: isLiked } : movie)),
+        prevMovies.map((movie) =>
+          movie.id === movieID
+            ? new Movie(
+                movie.id,
+                movie.title,
+                movie.releaseDate,
+                movie.runtime,
+                movie.mpaaRating,
+                movie.description,
+                movie.image,
+                movie.video,
+                movie.genres,
+                movie.userRating,
+                isLiked,
+              )
+            : movie,
+        ),
       );
     }
   };
 
   const sortedMovies = [...filteredMovies].sort((a, b) => {
-    if (sortField === "release_date") {
+    if (sortField === "releaseDate") {
       return sortDirection === "asc"
-        ? new Date(a.release_date).getTime() - new Date(b.release_date).getTime()
-        : new Date(b.release_date).getTime() - new Date(a.release_date).getTime();
+        ? a.releaseDate.getTime() - b.releaseDate.getTime()
+        : b.releaseDate.getTime() - a.releaseDate.getTime();
     }
 
-    if (sortField === "user_rating") {
+    if (sortField === "userRating") {
       return sortDirection === "asc"
-        ? a.user_rating - b.user_rating
-        : b.user_rating - a.user_rating;
+        ? a.userRating - b.userRating || a.id - b.id
+        : b.userRating - a.userRating || a.id - b.id;
     }
 
     return (
@@ -133,7 +178,7 @@ export default function MoviesPage() {
     setFilteredMovies(filtered);
   };
 
-  const renderSortIcon = (field: "title" | "release_date" | "mpaa_rating" | "user_rating") => (
+  const renderSortIcon = (field: "title" | "releaseDate" | "userRating") => (
     <span className="inline-block w-4">
       {sortField === field && (sortDirection === "asc" ? <FaSortAmountUp /> : <FaSortAmountDown />)}
     </span>
@@ -177,9 +222,7 @@ export default function MoviesPage() {
         </div>
       </div>
 
-      {isLoading ? (
-        <p className="mt-6 text-center text-gray-500">Loading movies...</p>
-      ) : sortedMovies.length === 0 ? (
+      {isLoading ? null : sortedMovies.length === 0 ? ( // <p className="mt-6 text-center text-gray-500">Loading movies...</p>
         <p className="mt-6 text-center text-gray-500">No movies found.</p>
       ) : (
         <div className="overflow-hidden">
@@ -204,10 +247,10 @@ export default function MoviesPage() {
                 <th
                   scope="col"
                   className="w-1/6 cursor-pointer px-3 py-3"
-                  onClick={() => handleSort("user_rating")}
+                  onClick={() => handleSort("userRating")}
                 >
                   <div className="flex items-center gap-2">
-                    User Rating {renderSortIcon("user_rating")}
+                    User Rating {renderSortIcon("userRating")}
                   </div>
                 </th>
                 <th scope="col" className="w-1/6 px-3 py-3">
@@ -216,10 +259,10 @@ export default function MoviesPage() {
                 <th
                   scope="col"
                   className="w-1/5 cursor-pointer px-3 py-3"
-                  onClick={() => handleSort("release_date")}
+                  onClick={() => handleSort("releaseDate")}
                 >
                   <div className="flex items-center gap-2">
-                    Release Date {renderSortIcon("release_date")}
+                    Release Date {renderSortIcon("releaseDate")}
                   </div>
                 </th>
                 <th scope="col" className="w-1/12 px-3 py-3">
@@ -233,9 +276,9 @@ export default function MoviesPage() {
                   <td className="px-3 py-3 whitespace-nowrap">
                     <Link to={`/movies/${movie.id}`}>
                       <img
-                        src={`https://image.tmdb.org/t/p/w400/${movie.image}`}
+                        src={movie.formattedImage}
                         alt={movie.title}
-                        className="mr-4 h-30 min-w-20 object-cover transition-transform hover:scale-105"
+                        className="h-30 min-w-20 object-cover transition-transform hover:scale-105"
                       />
                     </Link>
                   </td>
@@ -244,22 +287,19 @@ export default function MoviesPage() {
                       {movie.title}
                     </Link>
                   </td>
-                  {userDetails ? (
+                  {userDetails && (
                     <td className="px-3 py-3">
-                      <button
-                        className="cursor-pointer"
-                        onClick={() => toggleLike(movie.id, movie.is_liked)}
-                      >
-                        {movie.is_liked ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
+                      <button onClick={() => toggleLike(movie.id, movie.isLiked)}>
+                        {movie.isLiked ? <FaHeart className="text-red-500" /> : <FaRegHeart />}
                       </button>
                     </td>
-                  ) : null}
+                  )}
                   <td className="px-3 py-3 whitespace-nowrap">
-                    <UserRatingStar rating={movie.user_rating} />
+                    <UserRatingStar rating={movie.userRating} />
                   </td>
                   <td className="px-3 py-3 whitespace-nowrap">{renderGenres(movie.genres)}</td>
-                  <td className="px-3 py-3 whitespace-nowrap">{movie.release_date}</td>
-                  <td className="px-3 py-3 whitespace-nowrap">{movie.mpaa_rating}</td>
+                  <td className="px-3 py-3 whitespace-nowrap">{movie.formattedReleaseDate}</td>
+                  <td className="px-3 py-3 whitespace-nowrap">{movie.mpaaRating}</td>
                 </tr>
               ))}
             </tbody>

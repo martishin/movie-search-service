@@ -53,18 +53,32 @@ func main() {
 	}
 
 	// Connect to Postgres
-	pool, err := db.ConnectPostgresPool(postgresConfig)
+	postgresPool, err := db.NewPostgresPool(postgresConfig)
 	if err != nil {
 		logger.Error("Failed to connect to PostgreSQL", slog.Any("error", err))
 		os.Exit(1)
 	}
 
 	// Run Postgres migrations
-	if err := db.RunPostgresMigrations(pool); err != nil {
+	if err := db.RunPostgresMigrations(postgresPool); err != nil {
 		logger.Error("Failed to apply migrations", slog.Any("error", err))
 		os.Exit(1)
 	}
 	logger.Info("Database migrations applied successfully")
+
+	// Read Redis config
+	redisConfig, err := adapter.ReadRedisConfig()
+	if err != nil {
+		logger.Error("Failed to read redis config", slog.Any("error", err))
+		os.Exit(1)
+	}
+
+	// Connect to Redis
+	redisClient, err := db.NewRedisClient(redisConfig)
+	if err != nil {
+		logger.Error("Failed to connect to Redis", slog.Any("error", err))
+		os.Exit(1)
+	}
 
 	// Read server config
 	serverConfig, err := adapter.ReadServerConfig()
@@ -82,13 +96,13 @@ func main() {
 	fmt.Println(oauthConfig)
 
 	// Create the server
-	serv := server.NewServer(logger, pool, serverConfig, oauthConfig)
+	serv := server.NewServer(logger, postgresPool, redisClient, serverConfig, oauthConfig)
 
 	// Create a done channel to signal when the shutdown is complete
 	done := make(chan struct{})
 
 	// Run graceful shutdown in a separate goroutine
-	go gracefulShutdown(logger, serv, pool, done)
+	go gracefulShutdown(logger, serv, postgresPool, done)
 
 	logger.Info("Starting server", slog.String("address", "http://localhost"+serv.Addr))
 	err = serv.ListenAndServe()
