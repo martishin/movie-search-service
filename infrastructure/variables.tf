@@ -27,7 +27,7 @@ variable "environment_variables" {
   default = {
     PORT                  = "8100"
     POSTGRES_DATABASE     = "moviesearch"
-    POSTGRES_USERNAME     = "posgres"
+    POSTGRES_USERNAME     = "postgres"
     REDIS_PORT            = "6379"
     REDIS_DB              = "0"
     GOOGLE_CALLBACK_URL   = "https://ms-api.martishin.com/auth/callback?provider=google"
