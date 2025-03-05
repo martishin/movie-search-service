@@ -73,8 +73,8 @@ func (h *AuthHandler) LogoutHandler() http.HandlerFunc {
 			return
 		}
 
-		// Redirect user
-		http.Redirect(w, r, h.oauthConfig.RedirectURL, http.StatusTemporaryRedirect)
+		// Return 204 No Content
+		w.WriteHeader(http.StatusNoContent)
 	}
 }
 

@@ -37,7 +37,7 @@ func RegisterRoutes(
 	r.Route("/auth", func(api chi.Router) {
 		api.Get("/start", gothic.BeginAuthHandler)
 		api.Get("/callback", authHandler.GoogleCallbackHandler())
-		api.Get("/logout", authHandler.LogoutHandler())
+		api.Post("/logout", authHandler.LogoutHandler())
 		api.Post("/signup", authHandler.SignUpHandler())
 		api.Post("/login", authHandler.LoginHandler())
 	})

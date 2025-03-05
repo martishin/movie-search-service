@@ -50,8 +50,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await fetch(`${API_URL}/auth/logout`, { credentials: "include" });
-    setUserDetails(null);
+    try {
+      const response = await fetch(`${API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        setUserDetails(null);
+      } else {
+        console.error("Failed to logout:", response.status);
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   return (
