@@ -52,6 +52,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Ensure database exists
+	if err := db.EnsureDatabaseExists(postgresConfig); err != nil {
+		logger.Error("Failed to ensure database exists", slog.Any("error", err))
+		os.Exit(1)
+	}
+
 	// Connect to Postgres
 	postgresPool, err := db.NewPostgresPool(postgresConfig)
 	if err != nil {
