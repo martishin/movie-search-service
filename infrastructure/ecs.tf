@@ -98,6 +98,10 @@ resource "aws_ecs_task_definition" "app_task" {
         {
           name  = "PORT"
           value = var.environment_variables["PORT"]
+        },
+        {
+          name  = "LOGS_PATH"
+          value = var.environment_variables["LOGS_PATH"]
         }
       ],
       secrets = [
@@ -146,6 +150,10 @@ resource "aws_ecs_task_definition" "app_task" {
         {
           name  = "ENV",
           value = var.environment_variables["ENV"]
+        },
+        {
+          name  = "LOGS_PATH"
+          value = var.environment_variables["LOGS_PATH"]
         }
       ],
       secrets = [
