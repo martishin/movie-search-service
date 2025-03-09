@@ -130,6 +130,12 @@ resource "aws_ecs_task_definition" "app_task" {
           valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:ALLOY_PASSWORD::"
         }
       ],
+      mountPoints = [
+        {
+          sourceVolume  = "log-storage"
+          containerPath = "/var/log"
+        }
+      ],
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -154,7 +160,11 @@ resource "aws_ecs_task_definition" "app_task" {
         {
           name  = "LOGS_PATH"
           value = var.environment_variables["LOGS_PATH"]
-        }
+        },
+        {
+          name  = "ALLOY_CONFIG",
+          value = var.alloy_config
+        },
       ],
       secrets = [
         {
@@ -181,6 +191,14 @@ resource "aws_ecs_task_definition" "app_task" {
           name      = "LOKI_URL",
           valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:LOKI_URL::"
         },
+        {
+          name      = "ALLOY_USERNAME"
+          valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:ALLOY_USERNAME::"
+        },
+        {
+          name      = "ALLOY_PASSWORD"
+          valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:ALLOY_PASSWORD::"
+        }
       ],
       mountPoints = [
         {
@@ -188,7 +206,10 @@ resource "aws_ecs_task_definition" "app_task" {
           containerPath = "/var/log"
         }
       ],
-      command = ["run", "/etc/alloy/config.alloy"],
+      entryPoint = ["/bin/sh", "-c"],
+      command = [
+        "echo \"$ALLOY_CONFIG\" > /etc/alloy/config.alloy && /usr/bin/alloy run /etc/alloy/config.alloy"
+      ],
       logConfiguration = {
         logDriver = "awslogs"
         options = {
