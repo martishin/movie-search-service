@@ -17,5 +17,30 @@ services:
         ports:
             - "6379:6379"
 
+    alloy:
+        image: grafana/alloy:latest
+        network_mode: "host"
+        volumes:
+            - ./monitoring/config.alloy:/etc/alloy/config.alloy:ro
+            - ./log/:/var/log/:ro
+        ports:
+            - "12345:12345"
+        environment:
+            ALLOY_HOST: ${ALLOY_HOST}
+            ALLOY_USERNAME: ${ALLOY_USERNAME}
+            ALLOY_PASSWORD: ${ALLOY_PASSWORD}
+            GRAFANA_CLOUD_USERNAME: ${GRAFANA_CLOUD_USERNAME}
+            GRAFANA_CLOUD_API_KEY: ${GRAFANA_CLOUD_API_KEY}
+            GRAFANA_CLOUD_PROMETHEUS_URL: ${GRAFANA_CLOUD_PROMETHEUS_URL}
+            LOKI_USERNAME: ${LOKI_USERNAME}
+            LOKI_API_KEY: ${LOKI_API_KEY}
+            LOKI_URL: ${LOKI_URL}
+            ENV: ${ENV}
+        command:
+            - run
+            - /etc/alloy/config.alloy
+            - --server.http.listen-addr=0.0.0.0:12345
+            - --storage.path=/var/lib/alloy/data
+
 volumes:
     postgres_data:

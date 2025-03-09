@@ -116,8 +116,71 @@ resource "aws_ecs_task_definition" "app_task" {
         {
           name      = "POSTGRES_PASSWORD"
           valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:POSTGRES_PASSWORD::"
+        },
+        {
+          name      = "ALLOY_USERNAME"
+          valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:ALLOY_USERNAME::"
+        },
+        {
+          name      = "ALLOY_PASSWORD"
+          valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:ALLOY_PASSWORD::"
         }
-      ]
+      ],
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = "/ecs/${var.app_name}"
+          awslogs-region        = "us-east-1"
+          awslogs-stream-prefix = "ecs"
+        }
+      }
+    },
+    {
+      name      = "alloy"
+      image     = "grafana/alloy:latest"
+      essential = false
+      environment = [
+        {
+          name = "ALLOY_HOST",
+        value = var.environment_variables["ALLOY_HOST"] },
+        {
+          name  = "ENV",
+          value = var.environment_variables["ENV"]
+        }
+      ],
+      secrets = [
+        {
+          name      = "GRAFANA_CLOUD_USERNAME",
+          valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:GRAFANA_CLOUD_USERNAME::"
+        },
+        {
+          name      = "GRAFANA_CLOUD_API_KEY",
+          valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:GRAFANA_CLOUD_API_KEY::"
+        },
+        {
+          name      = "GRAFANA_CLOUD_PROMETHEUS_URL",
+          valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:GRAFANA_CLOUD_PROMETHEUS_URL::"
+        },
+        {
+          name      = "LOKI_USERNAME",
+          valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:LOKI_USERNAME::"
+        },
+        {
+          name      = "LOKI_API_KEY",
+          valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:LOKI_API_KEY::"
+        },
+        {
+          name      = "LOKI_URL",
+          valueFrom = "${data.aws_secretsmanager_secret_version.movie_search_secrets_version.arn}:LOKI_URL::"
+        },
+      ],
+      mountPoints = [
+        {
+          sourceVolume  = "log-storage"
+          containerPath = "/var/log"
+        }
+      ],
+      command = ["run", "/etc/alloy/config.alloy"],
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -128,4 +191,8 @@ resource "aws_ecs_task_definition" "app_task" {
       }
     }
   ])
+
+  volume {
+    name = "log-storage"
+  }
 }

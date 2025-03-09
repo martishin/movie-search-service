@@ -44,6 +44,7 @@ func NewServer(
 	redisClient *redis.Client,
 	serverConfig *config.ServerConfig,
 	oauthConfig *config.OAuthConfig,
+	alloyConfig *config.ObservabilityConfig,
 ) *http.Server {
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(postgresPool)
@@ -63,6 +64,7 @@ func NewServer(
 		userHandler,
 		authHandler,
 		movieHandler,
+		alloyConfig,
 	)
 
 	// Create Server instance

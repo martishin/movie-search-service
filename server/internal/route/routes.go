@@ -7,6 +7,8 @@ import (
 	"github.com/markbates/goth/gothic"
 	"github.com/martishin/movie-search-service/internal/handler"
 	"github.com/martishin/movie-search-service/internal/middleware"
+	"github.com/martishin/movie-search-service/internal/model/config"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
@@ -17,10 +19,12 @@ func RegisterRoutes(
 	userHandler *handler.UserHandler,
 	authHandler *handler.AuthHandler,
 	movieHandler *handler.MovieHandler,
+	alloyConfig *config.ObservabilityConfig,
 ) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestIDMiddleware(logger))
 	r.Use(middleware.LoggingMiddleware())
+	r.Use(middleware.MetricsMiddleware())
 
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://ms.martishin.com"},
@@ -44,7 +48,7 @@ func RegisterRoutes(
 
 	// API routes (protected)
 	r.Route("/api", func(api chi.Router) {
-		api.With(middleware.AuthMiddleware).Get("/users/me", userHandler.GetUserHandler())
+		api.With(middleware.SessionAuthMiddleware).Get("/users/me", userHandler.GetUserHandler())
 
 		// Movie endpoints
 		api.Get("/movies", movieHandler.ListMoviesHandler())
@@ -54,7 +58,7 @@ func RegisterRoutes(
 
 		// Liking Movies
 		api.Route("/movies/likes", func(likeRouter chi.Router) {
-			likeRouter.Use(middleware.AuthMiddleware)
+			likeRouter.Use(middleware.SessionAuthMiddleware)
 
 			likeRouter.Get("/", userHandler.GetLikedMoviesHandler())
 			likeRouter.Post("/{movie_id}", userHandler.AddLikeHandler())
@@ -63,7 +67,7 @@ func RegisterRoutes(
 
 		// Movies with likes
 		api.Route("/movies-with-likes", func(moviesWithLikesRouter chi.Router) {
-			moviesWithLikesRouter.Use(middleware.AuthMiddleware)
+			moviesWithLikesRouter.Use(middleware.SessionAuthMiddleware)
 
 			moviesWithLikesRouter.Get("/", movieHandler.ListMoviesWithGenresAndLikesHandler())
 			moviesWithLikesRouter.Get("/{movie_id}", movieHandler.GetMovieHandlerWithLike())
@@ -71,13 +75,16 @@ func RegisterRoutes(
 
 		// Admin endpoints
 		api.Route("/admin", func(admin chi.Router) {
-			admin.Use(middleware.AuthMiddleware)
+			admin.Use(middleware.SessionAuthMiddleware)
 
 			admin.Post("/movies", movieHandler.CreateMovieHandler())
 			admin.Put("/movies/{id}", movieHandler.UpdateMovieHandler())
 			admin.Delete("/movies/{id}", movieHandler.DeleteMovieHandler())
 		})
 	})
+
+	// Expose Prometheus Metrics
+	r.With(middleware.AlloyAuthMiddleware(alloyConfig)).Get("/metrics", promhttp.Handler().ServeHTTP)
 
 	return r
 }

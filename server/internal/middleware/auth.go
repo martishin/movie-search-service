@@ -5,9 +5,10 @@ import (
 	"net/http"
 
 	"github.com/markbates/goth/gothic"
+	"github.com/martishin/movie-search-service/internal/model/config"
 )
 
-func AuthMiddleware(next http.Handler) http.Handler {
+func SessionAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Retrieve user ID from the session
 		userID, err := gothic.GetFromSession("user_id", r)
@@ -29,4 +30,17 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), "userID", userID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func AlloyAuthMiddleware(alloyConfig *config.ObservabilityConfig) func(http.Handler) http.Handler {
+	return func(handler http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			authUsername, authPassword, ok := r.BasicAuth()
+			if !ok || authUsername != alloyConfig.AlloyUsername || authPassword != alloyConfig.AlloyPassword {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+			handler.ServeHTTP(w, r)
+		})
+	}
 }

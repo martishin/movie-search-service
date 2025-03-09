@@ -34,6 +34,8 @@ variable "environment_variables" {
     REDIRECT_URL          = "https://ms.martishin.com/"
     SESSION_COOKIE_DOMAIN = ".martishin.com"
     ENV                   = "production"
+    ALLOY_HOST            = "127.0.0.1:8100"
+    LOGS_PATH             = "/var/log/movie-search.log"
   }
 }
 

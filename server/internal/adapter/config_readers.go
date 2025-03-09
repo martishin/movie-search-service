@@ -74,6 +74,11 @@ func ReadPostgresConfig() (*config.PostgresConfig, error) {
 func ReadRedisConfig() (*config.RedisConfig, error) {
 	host := os.Getenv("REDIS_HOST")
 	port := os.Getenv("REDIS_PORT")
+
+	if host == "" || port == "" {
+		return nil, fmt.Errorf("missing required Redis environment variables")
+	}
+
 	db, err := strconv.Atoi(os.Getenv("REDIS_DB"))
 
 	if err != nil {
@@ -84,5 +89,21 @@ func ReadRedisConfig() (*config.RedisConfig, error) {
 		Host: host,
 		Port: port,
 		DB:   db,
+	}, nil
+}
+
+func ReadObservabilityConfig() (*config.ObservabilityConfig, error) {
+	alloyUsername := os.Getenv("ALLOY_USERNAME")
+	alloyPassword := os.Getenv("ALLOY_PASSWORD")
+	logPath := os.Getenv("LOGS_PATH")
+
+	if alloyUsername == "" || alloyPassword == "" || logPath == "" {
+		return nil, fmt.Errorf("missing required observability environment variables")
+	}
+
+	return &config.ObservabilityConfig{
+		AlloyUsername: alloyUsername,
+		AlloyPassword: alloyPassword,
+		LogPath:       logPath,
 	}, nil
 }

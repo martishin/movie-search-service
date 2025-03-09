@@ -1,10 +1,10 @@
 run:
 	go run cmd/api/main.go
 
-run-dependencies:
+start-all:
 	docker compose up postgres redis
 
-stop-dependencies:
+stop-all:
 	docker compose down postgres redis
 
 generate-sql:
@@ -12,6 +12,12 @@ generate-sql:
 
 test:
 	go test ./... -v
+
+start-alloy:
+	export $(grep -v '^#' .env | xargs) && alloy run monitoring/config.alloy --server.http.listen-addr=0.0.0.0:12345
+
+fetch-metrics:
+	curl -u "alloy:alloy" http://localhost:8100/metrics
 
 build-mac:
 	docker build --build-arg TARGETOS=darwin --build-arg TARGETARCH=arm64 -t movie-search-server .

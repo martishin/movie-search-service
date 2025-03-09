@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -14,8 +14,27 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/martishin/movie-search-service/internal/adapter"
 	"github.com/martishin/movie-search-service/internal/db"
+	"github.com/martishin/movie-search-service/internal/model/config"
 	"github.com/martishin/movie-search-service/internal/server"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
+
+func setupLogger(config *config.ObservabilityConfig) *slog.Logger {
+	// Configure log rotation
+	logFile := &lumberjack.Logger{
+		Filename:   config.LogPath, // Rotated log file (relative path)
+		MaxSize:    10,             // Max file size in MB before rotation
+		MaxBackups: 24,             // Keep last 24 log files (1-day history)
+		MaxAge:     1,              // Retain logs for 1 day
+		Compress:   true,           // Compress rotated logs
+	}
+
+	// Create a multi-writer to log to both file and stdout
+	multiWriter := slog.NewJSONHandler(io.MultiWriter(os.Stdout, logFile), nil)
+
+	// Initialize slog logger
+	return slog.New(multiWriter)
+}
 
 func gracefulShutdown(logger *slog.Logger, apiServer *http.Server, pool *pgxpool.Pool, done chan struct{}) {
 	// Create context that listens for the interrupt signal from the OS.
@@ -43,7 +62,13 @@ func gracefulShutdown(logger *slog.Logger, apiServer *http.Server, pool *pgxpool
 }
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	// Read Observability config
+	observabilityConfig, err := adapter.ReadObservabilityConfig()
+	if err != nil {
+		os.Exit(1)
+	}
+
+	logger := setupLogger(observabilityConfig)
 
 	// Read Postgres config
 	postgresConfig, err := adapter.ReadPostgresConfig()
@@ -99,10 +124,16 @@ func main() {
 		logger.Error("Failed to read Google OAuth config", slog.Any("error", err))
 		os.Exit(1)
 	}
-	fmt.Println(oauthConfig)
 
 	// Create the server
-	serv := server.NewServer(logger, postgresPool, redisClient, serverConfig, oauthConfig)
+	serv := server.NewServer(
+		logger,
+		postgresPool,
+		redisClient,
+		serverConfig,
+		oauthConfig,
+		observabilityConfig,
+	)
 
 	// Create a done channel to signal when the shutdown is complete
 	done := make(chan struct{})
