@@ -16,7 +16,7 @@ export default function WatchLikedPage() {
   const { userDetails } = useAuth();
 
   useEffect(() => {
-    fetch(`${API_URL}/api/movies/likes`, { credentials: "include" })
+    fetch(`${API_URL}/api/movies?only_liked=true`, { credentials: "include" })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch movies");
         return res.json();

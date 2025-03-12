@@ -23,10 +23,10 @@ type Movie struct {
 	MpaaRating  pgtype.Text
 	Description pgtype.Text
 	Image       pgtype.Text
+	Video       pgtype.Text
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
 	UserRating  pgtype.Numeric
-	Video       pgtype.Text
 }
 
 type MoviesGenre struct {

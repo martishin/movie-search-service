@@ -27,9 +27,7 @@ export default function MoviesPage() {
       if (fetchError) return;
       setIsLoading(true);
 
-      const apiEndpoint = userDetails
-        ? `${API_URL}/api/movies-with-likes`
-        : `${API_URL}/api/movies`;
+      const apiEndpoint = userDetails ? `${API_URL}/api/movies` : `${API_URL}/api/public/movies`;
 
       try {
         const response = await fetch(apiEndpoint, { credentials: "include" });
@@ -81,7 +79,7 @@ export default function MoviesPage() {
     if (!userDetails) return;
 
     const method = isLiked ? "DELETE" : "POST";
-    const endpoint = `${API_URL}/api/movies/likes/${movieID}`;
+    const endpoint = `${API_URL}/api/movies/${movieID}/like`;
 
     setMovies((prevMovies) =>
       prevMovies.map((movie) =>

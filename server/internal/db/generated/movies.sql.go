@@ -29,7 +29,7 @@ func (q *Queries) AddMovieGenre(ctx context.Context, arg AddMovieGenreParams) er
 const createMovie = `-- name: CreateMovie :one
 INSERT INTO movies (title, release_date, runtime, mpaa_rating, description, image, video)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, title, release_date, runtime, mpaa_rating, description, image, created_at, updated_at, user_rating, video
+RETURNING id, title, release_date, runtime, mpaa_rating, description, image, video, created_at, updated_at, user_rating
 `
 
 type CreateMovieParams struct {
@@ -61,10 +61,10 @@ func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie
 		&i.MpaaRating,
 		&i.Description,
 		&i.Image,
+		&i.Video,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UserRating,
-		&i.Video,
 	)
 	return i, err
 }
@@ -95,8 +95,78 @@ func (q *Queries) DeleteMovieGenres(ctx context.Context, movieID int32) error {
 	return err
 }
 
+const getLikedMoviesByUser = `-- name: GetLikedMoviesByUser :many
+SELECT
+    m.id AS movie_id,
+    m.title,
+    m.release_date,
+    m.runtime,
+    m.mpaa_rating,
+    m.description,
+    m.image,
+    m.user_rating,
+    m.video,
+    g.id AS genre_id,
+    g.genre
+FROM
+    users_like_movies ulm
+        JOIN movies m ON ulm.movie_id = m.id
+        LEFT JOIN movies_genres mg ON m.id = mg.movie_id
+        LEFT JOIN genres g ON mg.genre_id = g.id
+WHERE
+    ulm.user_id = $1
+ORDER BY
+    m.title
+`
+
+type GetLikedMoviesByUserRow struct {
+	MovieID     int32
+	Title       string
+	ReleaseDate pgtype.Date
+	Runtime     pgtype.Int4
+	MpaaRating  pgtype.Text
+	Description pgtype.Text
+	Image       pgtype.Text
+	UserRating  pgtype.Numeric
+	Video       pgtype.Text
+	GenreID     pgtype.Int4
+	Genre       pgtype.Text
+}
+
+func (q *Queries) GetLikedMoviesByUser(ctx context.Context, userID int32) ([]GetLikedMoviesByUserRow, error) {
+	rows, err := q.db.Query(ctx, getLikedMoviesByUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetLikedMoviesByUserRow
+	for rows.Next() {
+		var i GetLikedMoviesByUserRow
+		if err := rows.Scan(
+			&i.MovieID,
+			&i.Title,
+			&i.ReleaseDate,
+			&i.Runtime,
+			&i.MpaaRating,
+			&i.Description,
+			&i.Image,
+			&i.UserRating,
+			&i.Video,
+			&i.GenreID,
+			&i.Genre,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getMovieByID = `-- name: GetMovieByID :one
-SELECT id, title, release_date, runtime, mpaa_rating, description, image, created_at, updated_at, user_rating, video
+SELECT id, title, release_date, runtime, mpaa_rating, description, image, video, created_at, updated_at, user_rating
 FROM
     movies
 WHERE
@@ -114,10 +184,10 @@ func (q *Queries) GetMovieByID(ctx context.Context, id int32) (Movie, error) {
 		&i.MpaaRating,
 		&i.Description,
 		&i.Image,
+		&i.Video,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UserRating,
-		&i.Video,
 	)
 	return i, err
 }
@@ -217,7 +287,7 @@ func (q *Queries) ListGenresByMovieID(ctx context.Context, movieID int32) ([]Lis
 }
 
 const listMovies = `-- name: ListMovies :many
-SELECT id, title, release_date, runtime, mpaa_rating, description, image, created_at, updated_at, user_rating, video
+SELECT id, title, release_date, runtime, mpaa_rating, description, image, video, created_at, updated_at, user_rating
 FROM
     movies
 ORDER BY
@@ -241,10 +311,10 @@ func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
 			&i.MpaaRating,
 			&i.Description,
 			&i.Image,
+			&i.Video,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.UserRating,
-			&i.Video,
 		); err != nil {
 			return nil, err
 		}
@@ -258,7 +328,7 @@ func (q *Queries) ListMovies(ctx context.Context) ([]Movie, error) {
 
 const listMoviesByGenre = `-- name: ListMoviesByGenre :many
 SELECT
-    m.id, m.title, m.release_date, m.runtime, m.mpaa_rating, m.description, m.image, m.created_at, m.updated_at, m.user_rating, m.video
+    m.id, m.title, m.release_date, m.runtime, m.mpaa_rating, m.description, m.image, m.video, m.created_at, m.updated_at, m.user_rating
 FROM
     movies m
         JOIN movies_genres mg ON m.id = mg.movie_id
@@ -285,10 +355,10 @@ func (q *Queries) ListMoviesByGenre(ctx context.Context, genreID int32) ([]Movie
 			&i.MpaaRating,
 			&i.Description,
 			&i.Image,
+			&i.Video,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.UserRating,
-			&i.Video,
 		); err != nil {
 			return nil, err
 		}

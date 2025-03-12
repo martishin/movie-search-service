@@ -50,7 +50,3 @@ func (r *UserRepository) UnlikeMovie(ctx context.Context, userID, movieID int) e
 		MovieID: int32(movieID),
 	})
 }
-
-func (r *UserRepository) GetLikedMovies(ctx context.Context, userID int) ([]db.GetLikedMoviesByUserRow, error) {
-	return r.queries.GetLikedMoviesByUser(ctx, int32(userID))
-}

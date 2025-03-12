@@ -21,8 +21,8 @@ export default function MoviePage(): ReactNode {
     const fetchMovie = async () => {
       try {
         const apiEndpoint = userDetails
-          ? `${API_URL}/api/movies-with-likes/${id}`
-          : `${API_URL}/api/movies/${id}`;
+          ? `${API_URL}/api/movies/${id}`
+          : `${API_URL}/api/public/movies/${id}`;
         const response = await fetch(apiEndpoint, {
           method: "GET",
           credentials: "include",
@@ -70,7 +70,7 @@ export default function MoviePage(): ReactNode {
     if (!userDetails || !movie) return;
 
     const method = movie.isLiked ? "DELETE" : "POST";
-    const endpoint = `${API_URL}/api/movies/likes/${movie.id}`;
+    const endpoint = `${API_URL}/api/movies/${movie.id}/like`;
 
     // Optimistic UI update with a proper Movie instance
     setMovie((prev) => {

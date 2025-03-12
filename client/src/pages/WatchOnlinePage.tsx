@@ -16,7 +16,7 @@ export default function WatchOnlinePage() {
 
   useEffect(() => {
     if (fetchError) return;
-    fetch(`${API_URL}/api/movies`)
+    fetch(`${API_URL}/api/public/movies`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch movies");
         return res.json();

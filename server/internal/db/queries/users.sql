@@ -43,26 +43,3 @@ FROM
 WHERE
       user_id = $1
   AND movie_id = $2;
-
--- name: GetLikedMoviesByUser :many
-SELECT
-    m.id AS movie_id,
-    m.title,
-    m.release_date,
-    m.runtime,
-    m.mpaa_rating,
-    m.description,
-    m.image,
-    m.user_rating,
-    m.video,
-    g.id AS genre_id,
-    g.genre
-FROM
-    users_like_movies ulm
-        JOIN movies m ON ulm.movie_id = m.id
-        LEFT JOIN movies_genres mg ON m.id = mg.movie_id
-        LEFT JOIN genres g ON mg.genre_id = g.id
-WHERE
-    ulm.user_id = $1
-ORDER BY
-    m.title;

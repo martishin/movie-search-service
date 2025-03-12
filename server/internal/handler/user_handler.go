@@ -82,21 +82,3 @@ func (h *UserHandler) RemoveLikeHandler() http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 	}
 }
-
-func (h *UserHandler) GetLikedMoviesHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		userID, err := adapter.GetUserIDFromSession(r)
-		if err != nil {
-			adapter.JsonErrorResponse(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		movies, err := h.userService.GetLikedMovies(r.Context(), userID)
-		if err != nil {
-			adapter.JsonErrorResponse(w, "Could not fetch liked movies", http.StatusInternalServerError)
-			return
-		}
-
-		json.NewEncoder(w).Encode(movies)
-	}
-}

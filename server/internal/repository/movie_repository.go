@@ -114,3 +114,7 @@ func (r *MovieRepository) IsMovieLikedByUser(ctx context.Context, movieID, userI
 	}
 	return liked, nil
 }
+
+func (r *MovieRepository) GetLikedMovies(ctx context.Context, userID int) ([]db.GetLikedMoviesByUserRow, error) {
+	return r.queries.GetLikedMoviesByUser(ctx, int32(userID))
+}

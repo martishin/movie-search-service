@@ -298,3 +298,49 @@ func (s *MovieService) ListMoviesWithGenresAndLikes(ctx context.Context, userID 
 
 	return movies, nil
 }
+
+func (s *MovieService) GetLikedMovies(ctx context.Context, userID int) ([]*domain.Movie, error) {
+	dbMovies, err := s.movieRepo.GetLikedMovies(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	movieMap := make(map[int]*domain.Movie)
+
+	for _, row := range dbMovies {
+		movieID := int(row.MovieID)
+		movie, exists := movieMap[movieID]
+		userRating, _ := row.UserRating.Float64Value()
+
+		if !exists {
+			movie = &domain.Movie{
+				ID:          movieID,
+				Title:       row.Title,
+				ReleaseDate: row.ReleaseDate.Time,
+				RunTime:     int(row.Runtime.Int32),
+				MPAARating:  row.MpaaRating.String,
+				Description: row.Description.String,
+				Image:       row.Image.String,
+				UserRating:  userRating.Float64,
+				Video:       row.Video.String,
+				Genres:      []*domain.Genre{},
+			}
+		}
+
+		if row.GenreID.Valid {
+			movie.Genres = append(movie.Genres, &domain.Genre{
+				ID:    int(row.GenreID.Int32),
+				Genre: row.Genre.String,
+			})
+		}
+
+		movieMap[movieID] = movie
+	}
+
+	movies := make([]*domain.Movie, 0)
+	for _, movie := range movieMap {
+		movies = append(movies, movie)
+	}
+
+	return movies, nil
+}

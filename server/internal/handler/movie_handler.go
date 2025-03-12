@@ -192,6 +192,20 @@ func (h *MovieHandler) ListMoviesWithGenresAndLikesHandler() http.HandlerFunc {
 			return
 		}
 
+		// Check if only_liked query parameter is passed
+		if r.URL.Query().Get("only_liked") == "true" {
+			movies, err := h.movieService.GetLikedMovies(r.Context(), userID)
+			if err != nil {
+				logger.Error("Failed to fetch liked movies", slog.Any("error", err))
+				adapter.JsonErrorResponse(w, "Could not fetch liked movies", http.StatusInternalServerError)
+				return
+			}
+
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(movies)
+			return
+		}
+
 		movies, err := h.movieService.ListMoviesWithGenresAndLikes(r.Context(), userID)
 		if err != nil {
 			logger.Error("Failed to fetch movies with genres and likes", slog.Any("error", err))
