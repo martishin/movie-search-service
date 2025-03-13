@@ -63,7 +63,6 @@ func RegisterRoutes(
 			moviesWithLikesRouter.Get("/{movie_id}", movieHandler.GetMovieHandlerWithLike())
 			moviesWithLikesRouter.Post("/{movie_id}/like", userHandler.AddLikeHandler())
 			moviesWithLikesRouter.Delete("/{movie_id}/like", userHandler.RemoveLikeHandler())
-			moviesWithLikesRouter.Post("/", movieHandler.CreateMovieHandler())
 		})
 
 		// Admin endpoints
