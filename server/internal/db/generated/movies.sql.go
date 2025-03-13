@@ -26,9 +26,24 @@ func (q *Queries) AddMovieGenre(ctx context.Context, arg AddMovieGenreParams) er
 	return err
 }
 
+const attachGenresToMovie = `-- name: AttachGenresToMovie :exec
+INSERT INTO movies_genres (movie_id, genre_id)
+SELECT $1, unnest($2::INTEGER[])
+`
+
+type AttachGenresToMovieParams struct {
+	MovieID int32
+	Column2 []int32
+}
+
+func (q *Queries) AttachGenresToMovie(ctx context.Context, arg AttachGenresToMovieParams) error {
+	_, err := q.db.Exec(ctx, attachGenresToMovie, arg.MovieID, arg.Column2)
+	return err
+}
+
 const createMovie = `-- name: CreateMovie :one
-INSERT INTO movies (title, release_date, runtime, mpaa_rating, description, image, video)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+INSERT INTO movies (title, release_date, runtime, mpaa_rating, description, image, video, user_rating)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id, title, release_date, runtime, mpaa_rating, description, image, video, created_at, updated_at, user_rating
 `
 
@@ -40,6 +55,7 @@ type CreateMovieParams struct {
 	Description pgtype.Text
 	Image       pgtype.Text
 	Video       pgtype.Text
+	UserRating  pgtype.Numeric
 }
 
 func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie, error) {
@@ -51,6 +67,7 @@ func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie
 		arg.Description,
 		arg.Image,
 		arg.Video,
+		arg.UserRating,
 	)
 	var i Movie
 	err := row.Scan(
@@ -519,7 +536,8 @@ SET title        = $2,
     mpaa_rating  = $5,
     description  = $6,
     image        = $7,
-    video        = $8
+    video        = $8,
+    user_rating  = $9
 WHERE
     id = $1
 `
@@ -533,6 +551,7 @@ type UpdateMovieParams struct {
 	Description pgtype.Text
 	Image       pgtype.Text
 	Video       pgtype.Text
+	UserRating  pgtype.Numeric
 }
 
 func (q *Queries) UpdateMovie(ctx context.Context, arg UpdateMovieParams) error {
@@ -545,6 +564,7 @@ func (q *Queries) UpdateMovie(ctx context.Context, arg UpdateMovieParams) error 
 		arg.Description,
 		arg.Image,
 		arg.Video,
+		arg.UserRating,
 	)
 	return err
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"math/big"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -10,11 +11,13 @@ import (
 )
 
 type MovieRepository struct {
+	pool    *pgxpool.Pool
 	queries *db.Queries
 }
 
 func NewMovieRepository(postgresPool *pgxpool.Pool) *MovieRepository {
 	return &MovieRepository{
+		pool:    postgresPool,
 		queries: db.New(postgresPool),
 	}
 }
@@ -28,6 +31,7 @@ func (r *MovieRepository) CreateMovie(ctx context.Context, movie domain.Movie) (
 		Description: pgtype.Text{String: movie.Description, Valid: true},
 		Image:       pgtype.Text{String: movie.Image, Valid: true},
 		Video:       pgtype.Text{String: movie.Video, Valid: true},
+		UserRating:  pgtype.Numeric{Int: big.NewInt(int64(movie.UserRating * 10)), Exp: -1, Valid: true},
 	}
 
 	return r.queries.CreateMovie(ctx, params)
@@ -51,6 +55,7 @@ func (r *MovieRepository) UpdateMovie(ctx context.Context, movie domain.Movie) e
 		Description: pgtype.Text{String: movie.Description, Valid: true},
 		Image:       pgtype.Text{String: movie.Image, Valid: true},
 		Video:       pgtype.Text{String: movie.Image, Valid: true},
+		UserRating:  pgtype.Numeric{Int: big.NewInt(int64(movie.UserRating * 10)), Exp: -1, Valid: true},
 	}
 	return r.queries.UpdateMovie(ctx, params)
 }
@@ -117,4 +122,64 @@ func (r *MovieRepository) IsMovieLikedByUser(ctx context.Context, movieID, userI
 
 func (r *MovieRepository) GetLikedMovies(ctx context.Context, userID int) ([]db.GetLikedMoviesByUserRow, error) {
 	return r.queries.GetLikedMoviesByUser(ctx, int32(userID))
+}
+
+func (r *MovieRepository) CreateMovieWithGenres(ctx context.Context, movie domain.Movie) (db.Movie, error) {
+	// Start transaction
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return db.Movie{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	qtx := r.queries.WithTx(tx)
+
+	// Step 1: Insert the movie
+	params := db.CreateMovieParams{
+		Title:       movie.Title,
+		ReleaseDate: pgtype.Date{Time: movie.ReleaseDate, Valid: true},
+		Runtime:     pgtype.Int4{Int32: int32(movie.RunTime), Valid: true},
+		MpaaRating:  pgtype.Text{String: movie.MPAARating, Valid: true},
+		Description: pgtype.Text{String: movie.Description, Valid: true},
+		Image:       pgtype.Text{String: movie.Image, Valid: true},
+		Video:       pgtype.Text{String: movie.Video, Valid: true},
+		UserRating:  pgtype.Numeric{Int: big.NewInt(int64(movie.UserRating * 10)), Exp: -1, Valid: true},
+	}
+
+	dbMovie, err := qtx.CreateMovie(ctx, params)
+	if err != nil {
+		return db.Movie{}, err
+	}
+
+	// Step 2: Attach genres if provided
+	genreIDs := getGenreIDs(movie.Genres)
+	if len(genreIDs) > 0 {
+		genreIDs32 := make([]int32, len(genreIDs))
+		for i, id := range genreIDs {
+			genreIDs32[i] = int32(id)
+		}
+
+		err = qtx.AttachGenresToMovie(ctx, db.AttachGenresToMovieParams{
+			MovieID: dbMovie.ID,
+			Column2: genreIDs32,
+		})
+		if err != nil {
+			return db.Movie{}, err
+		}
+	}
+
+	// Commit the transaction
+	if err := tx.Commit(ctx); err != nil {
+		return db.Movie{}, err
+	}
+
+	return dbMovie, nil
+}
+
+func getGenreIDs(genres []*domain.Genre) []int {
+	var genreIDs []int
+	for _, g := range genres {
+		genreIDs = append(genreIDs, g.ID)
+	}
+	return genreIDs
 }

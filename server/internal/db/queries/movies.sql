@@ -1,6 +1,6 @@
 -- name: CreateMovie :one
-INSERT INTO movies (title, release_date, runtime, mpaa_rating, description, image, video)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+INSERT INTO movies (title, release_date, runtime, mpaa_rating, description, image, video, user_rating)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING *;
 
 -- name: GetMovieByID :one
@@ -45,7 +45,8 @@ SET title        = $2,
     mpaa_rating  = $5,
     description  = $6,
     image        = $7,
-    video        = $8
+    video        = $8,
+    user_rating  = $9
 WHERE
     id = $1;
 
@@ -120,6 +121,9 @@ FROM
 ORDER BY
     m.title, g.genre;
 
+-- name: AttachGenresToMovie :exec
+INSERT INTO movies_genres (movie_id, genre_id)
+SELECT $1, unnest($2::INTEGER[]);
 
 -- name: IsMovieLikedByUser :one
 SELECT

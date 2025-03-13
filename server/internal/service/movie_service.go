@@ -24,11 +24,17 @@ func NewMovieService(movieRepo *repository.MovieRepository, redisClient *redis.C
 }
 
 func (s *MovieService) CreateMovie(ctx context.Context, movie domain.Movie) (*domain.Movie, error) {
-	dbMovie, err := s.movieRepo.CreateMovie(ctx, movie)
+	dbMovie, err := s.movieRepo.CreateMovieWithGenres(ctx, movie)
 	if err != nil {
 		return nil, err
 	}
-	return mapDBMovieToDomainMovie(&dbMovie), nil
+	createdMovie := mapDBMovieToDomainMovie(&dbMovie)
+	genres, err := s.movieRepo.ListGenresByMovieID(ctx, createdMovie.ID)
+	if err != nil {
+		return nil, err
+	}
+	createdMovie.Genres = mapDBGenresToDomainGenres(genres)
+	return createdMovie, nil
 }
 
 func (s *MovieService) GetMovieByIDWithGenres(ctx context.Context, id int) (*domain.Movie, error) {
