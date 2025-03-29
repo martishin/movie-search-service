@@ -1,16 +1,14 @@
-# Movie Search Service
-**Movie Search: Discover and stream your favorite movies - all in one place!**
+# Movie Search
+**Discover and stream your favorite movies - all in one place!**
 
-Example service for the ["Technical Skills for Product Managers"](https://verbetcetera.com/tech-skills-course) course.  
 Website with information about movies, that uses React.js on the frontend, Go on the backend, and Terraform to provision AWS infrastructure.    
+You can check the live version [here](https://ms.martishin.com/)!  
 
 <p>
   <img width="300" src="https://github.com/user-attachments/assets/edf425e3-dc2c-4006-a7ed-3a15d5f0d8e0" />
   <img width="300" src="https://github.com/user-attachments/assets/b8ffe155-b31b-4cf1-9578-71973a54f083" />
   <img width="300" src="https://github.com/user-attachments/assets/c05b16a1-6a6e-446b-b808-bbe50e6f97b8" />
 </p>
-
-You can check the live version [here](https://ms.martishin.com/)!  
 
 ## 🚀 Running Locally
 ### Server
