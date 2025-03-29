@@ -1,7 +1,7 @@
 # Movie Search
 **Discover and stream your favorite movies - all in one place!**
 
-Website with information about movies, that uses React.js on the frontend, Go on the backend, and Terraform to provision AWS infrastructure.    
+Website with information about movies, built with React.js on the frontend, Go on the backend, and Terraform to provision AWS infrastructure.    
 You can check the live version [here](https://ms.martishin.com/)!  
 
 <p>
