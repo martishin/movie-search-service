@@ -33,6 +33,7 @@ You can check the live version [here](https://ms.martishin.com/)!
 * APIs for Movies CRUD operations
 * PostgresSQL migrations
 * Using Docker to containerize the application and for local testing
+* Using Grafana Allure for observability and log collection
 * Provisioning AWS infrastructure using Terraform:
   * ECS cluster and Task creation
   * Creation and configuration of a load balancer (ALB) 
