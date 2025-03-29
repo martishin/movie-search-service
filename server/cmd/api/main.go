@@ -150,5 +150,4 @@ func main() {
 
 	// Wait for the graceful shutdown to complete
 	<-done
-	logger.Info("Graceful shutdown complete.")
 }
