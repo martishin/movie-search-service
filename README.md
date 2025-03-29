@@ -1,6 +1,6 @@
 # Movie Search Service
-Example service from the ["Technical Skills for Product Managers"](https://verbetcetera.com/tech-skills-course) course.  
-Website with information about movies, that uses React.js on the frontend, Go on the backend, and Terraform to provision AWS infrastructure.
+Example service for the ["Technical Skills for Product Managers"](https://verbetcetera.com/tech-skills-course) course.  
+Website with information about movies, that uses React.js on the frontend, Go on the backend, and Terraform to provision AWS infrastructure.    
 
 <p>
   <img width="300" src="https://github.com/user-attachments/assets/edf425e3-dc2c-4006-a7ed-3a15d5f0d8e0" />
@@ -8,7 +8,7 @@ Website with information about movies, that uses React.js on the frontend, Go on
   <img width="300" src="https://github.com/user-attachments/assets/c05b16a1-6a6e-446b-b808-bbe50e6f97b8" />
 </p>
 
-
+You can check the live version [here](https://ms.martishin.com/)!  
 
 ## 🚀 Running Locally
 ### Server
