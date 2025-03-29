@@ -1,4 +1,6 @@
 # Movie Search Service
+**Movie Search: Discover and stream your favorite movies - all in one place!**
+
 Example service for the ["Technical Skills for Product Managers"](https://verbetcetera.com/tech-skills-course) course.  
 Website with information about movies, that uses React.js on the frontend, Go on the backend, and Terraform to provision AWS infrastructure.    
 
