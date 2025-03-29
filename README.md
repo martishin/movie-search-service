@@ -28,15 +28,16 @@ You can check the live version [here](https://ms.martishin.com/)!
 * Browsing a list of movies
 * Viewing information for an individual movie
 * Ability to like a movie and see a list of liked movies
-* Searching movies
+* Searching movies by name
 * Fetching the movie's poster image from TMDB and trailer from YouTube
-* APIs for Movies CRUD operations
-* PostgresSQL migrations
+* Provides APIs for Movies CRUD operations
+* Optimized for all screen sizes with a fully responsive layout
+* Utilizes PostgresSQL migrations for schema consistency 
 * Using Docker to containerize the application and for local testing
 * Using Grafana Allure for observability and log collection
 * Provisioning AWS infrastructure using Terraform:
-  * ECS cluster and Task creation
-  * Creation and configuration of a load balancer (ALB) 
-  * PostgreSQL (RDS) and Redis (Elasticache) provisioning
-  * Setting up a network for the service
-  * Configuring security groups and policies
+    * ECS cluster and Task creation
+    * Creation and configuration of a load balancer (ALB)
+    * PostgreSQL (RDS) and Redis (Elasticache) provisioning
+    * Setting up a network for the service
+    * Configuring security groups and policies
