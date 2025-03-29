@@ -24,7 +24,7 @@ You can check the live version [here](https://ms.martishin.com/)!
 * UI will be available at https://localhost:5173/
 
 ## ⚙️ Features
-* User login using password or OAuth
+* User login with password or OAuth
 * Browsing a list of movies
 * Viewing information for an individual movie
 * Ability to like a movie and see a list of liked movies
