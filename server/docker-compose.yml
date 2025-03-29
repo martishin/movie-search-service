@@ -1,4 +1,35 @@
 services:
+    server:
+        image: movie-search-server
+        build:
+            context: .
+            dockerfile: Dockerfile
+        restart: on-failure
+        environment:
+            POSTGRES_HOST: ${POSTGRES_HOST}
+            POSTGRES_DATABASE: ${POSTGRES_DATABASE}
+            POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+            REDIS_HOST: ${REDIS_HOST}
+            REDIS_PORT: ${REDIS_PORT}
+            REDIS_DB: ${REDIS_DB}
+            GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
+            REDIRECT_URL: ${REDIRECT_URL}
+            SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN}
+            ENV: ${ENV}
+            PORT: ${PORT}
+            LOGS_PATH: ${LOGS_PATH}
+            GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+            GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+            SESSION_SECRET: ${SESSION_SECRET}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            ALLOY_USERNAME: ${ALLOY_USERNAME}
+            ALLOY_PASSWORD: ${ALLOY_PASSWORD}
+        ports:
+            - "8100:8100"
+        depends_on:
+            - postgres
+            - redis
+
     postgres:
         image: postgres:latest
         restart: always
