@@ -31,7 +31,7 @@ export default function Main() {
   return (
     <AuthProvider>
       <AlertProvider>
-        <div className="min-h-screen bg-[#F4F4F4]">
+        <div className="bg-[#F4F4F4]">
           <RouterProvider router={router} />
         </div>
       </AlertProvider>

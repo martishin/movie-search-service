@@ -22,7 +22,7 @@ export default function App(): JSX.Element | null {
             <Navigation />
           </div>
 
-          <div className="flex-grow overflow-auto p-4">
+          <div className="flex-grow overflow-auto p-4 pb-40 md:pb-4">
             <Outlet />
           </div>
         </div>
