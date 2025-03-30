@@ -1,6 +1,6 @@
 # Movie Search
 Movie Search is a full-stack web app for browsing and streaming movies.  
-It’s built with React.js and Go, and uses Terraform for infrastructure provisioning.
+It’s built with React.js and Go and uses Terraform for infrastructure provisioning.
 
 You can find the live version [here](https://ms.martishin.com/)!  
 
@@ -26,21 +26,33 @@ This project was originally built as an example full-stack service for the [Tech
 * UI will be available at https://localhost:5173/
 
 ## ⚙️ Features
-* User login with password or OAuth
-* Browsing a list of movies
-* Viewing information for an individual movie
-* Ability to like a movie and see a list of liked movies
-* Searching movies by name
-* Fetching the movie's poster image from TMDB and trailer from YouTube
-* Provides APIs for Movies CRUD operations
-* Optimized for all screen sizes with a fully responsive layout
-* Utilizes PostgresSQL migrations for schema consistency 
-* Using Docker to containerize the application and for local testing
-* Using Grafana Alloy for observability and log collection
-* CI/CD with GitHub Actions
-* Provisioning AWS infrastructure using Terraform:
-    * ECS cluster and Task creation
-    * Creation and configuration of a load balancer (ALB)
-    * PostgreSQL (RDS) and Redis (Elasticache) provisioning
-    * Setting up a network for the service
-    * Configuring security groups and policies
+### Frontend (React.js, Tailwind CSS, Vite)
+- Responsive UI built with React.js and Tailwind CSS
+- Client-side routing using React Router
+- Browse a list of movies
+- View detailed movie information
+- Search movies by title or genre
+- Like/unlike movies and view your liked list
+- Fully responsive layout for all screen sizes
+- Tested with Jest and Testing Library
+
+### Backend (Go)
+- RESTful API built with Go and the Chi router
+- Provide CRUD operations for movies
+- Authentication via OAuth and passwords using Goth and Gorilla Sessions
+- PostgreSQL persistence with pgx, SQL migrations via golang-migrate
+- Caching layer using Redis with go-redis
+- Structured logging via Go’s `slog` package
+- Monitoring and metrics collection using Prometheus
+- Fetches movie posters from TMDB and trailers from YouTube
+
+### DevOps & Infrastructure (Terraform + AWS)
+- Dockerized for local development and testing
+- CI/CD powered by GitHub Actions and Vercel
+- Infrastructure provisioned via Terraform, including:
+  - ECS (Fargate) for container orchestration
+  - Application Load Balancer (ALB) with custom routing
+  - PostgreSQL (RDS) and Redis (ElastiCache) setup
+  - VPC, subnets, NAT gateways, and route tables
+  - IAM roles, security groups, and policies
+- Observability with CloudWatch for logs and alarms
