@@ -2,7 +2,7 @@
 Movie Search is a full-stack web app for browsing and streaming movies.  
 Built with React.js and Go, using Terraform for AWS infrastructure provisioning.
 
-You can check the live version [here](https://ms.martishin.com/)!  
+You can find the live version [here](https://ms.martishin.com/)!  
 
 <p>
   <img width="250" src="https://github.com/user-attachments/assets/edf425e3-dc2c-4006-a7ed-3a15d5f0d8e0" />
