@@ -33,17 +33,17 @@ This project was originally built as an example full-stack service for the [Tech
 - View detailed movie information
 - Search movies by title or genre
 - Like/unlike movies and view your liked list
-- Fully responsive layout for all screen sizes
+- Fully responsive layout optimized for all screen sizes
 - Tested with Jest and Testing Library
 
 ### Backend (Go)
 - RESTful API built with Go and the Chi router
-- Provide CRUD operations for movies
+- Supports CRUD operations for movies, users, and likes
 - Authentication via OAuth and passwords using Goth and Gorilla Sessions
-- PostgreSQL persistence with pgx, SQL migrations via golang-migrate
-- Caching layer using Redis with go-redis
-- Structured logging via Go’s `slog` package
-- Monitoring and metrics collection using Prometheus
+- Data persistence in PostgreSQL using pgx, with SQL migrations via golang-migrate
+- Caching with Redis using go-redis
+- Structured logging via Go’s built-in slog package
+- Monitoring and metrics collection using Alloy and Prometheus
 - Fetches movie posters from TMDB and trailers from YouTube
 
 ### DevOps & Infrastructure (Terraform + AWS)
@@ -52,7 +52,7 @@ This project was originally built as an example full-stack service for the [Tech
 - Infrastructure provisioned via Terraform, including:
   - ECS (Fargate) for container orchestration
   - Application Load Balancer (ALB) with custom routing
-  - PostgreSQL (RDS) and Redis (ElastiCache) setup
+  - PostgreSQL (RDS) and Redis (ElastiCache) provisioning
   - VPC, subnets, NAT gateways, and route tables
   - IAM roles, security groups, and policies
-- Observability with CloudWatch for logs and alarms
+- Observability and alerting with Grafana
