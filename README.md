@@ -10,7 +10,7 @@ You can find the live version [here](https://ms.martishin.com/)!
   <img width="250" src="https://github.com/user-attachments/assets/c05b16a1-6a6e-446b-b808-bbe50e6f97b8" />
 </p>
 
-This project was originally built as an example full-stack service for the [Technical Skills for Product Managers](https://verbetcetera.com/tech-skills-course) course.
+This project was built as an example full-stack service for the [Technical Skills for Product Managers](https://verbetcetera.com/tech-skills-course) course.
 
 ## 🚀 Running Locally
 ### Server
