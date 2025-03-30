@@ -36,7 +36,7 @@ This project was originally built as an example full-stack service for the [Tech
 * Optimized for all screen sizes with a fully responsive layout
 * Utilizes PostgresSQL migrations for schema consistency 
 * Using Docker to containerize the application and for local testing
-* Using Grafana Allure for observability and log collection
+* Using Grafana Alloy for observability and log collection
 * CI/CD with Github Actions
 * Provisioning AWS infrastructure using Terraform:
     * ECS cluster and Task creation
