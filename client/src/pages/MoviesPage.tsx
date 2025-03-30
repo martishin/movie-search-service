@@ -231,7 +231,7 @@ export default function MoviesPage() {
       {isLoading ? null : sortedMovies.length === 0 ? ( // <p className="mt-6 text-center text-gray-500">Loading movies...</p>
         <p className="mt-6 text-center text-gray-500">No movies found.</p>
       ) : (
-        <div className="overflow-hidden">
+        <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm text-gray-700">
             <thead className="bg-transparent text-gray-900">
               <tr>
