@@ -4,6 +4,9 @@ env:
     ECR_REPO: 100381574725.dkr.ecr.us-east-1.amazonaws.com/movie-search/server
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:

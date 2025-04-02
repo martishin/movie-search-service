@@ -7,6 +7,7 @@ import GenreTag from "../components/GenreTag";
 import UserRatingStar from "../components/UserRatingStar";
 import { useAlert } from "../context/AlertContext";
 import { useAuth } from "../context/AuthContext";
+import { useFeatureFlag } from "../experiments/useFeatureFlag";
 import Movie from "../models/Movie";
 
 export default function MoviePage(): ReactNode {
@@ -16,6 +17,7 @@ export default function MoviePage(): ReactNode {
   const { userDetails } = useAuth();
   const { showAlert } = useAlert();
   const [isFetchingMovie, setIsFetchingMovie] = useState(true);
+  const showRating = useFeatureFlag("show_rating");
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -156,10 +158,12 @@ export default function MoviePage(): ReactNode {
                     </button>
                   )}
                 </div>
-                <p className="flex items-center gap-2 font-semibold">
-                  <span className="text-gray-700">User Rating:</span>
-                  <UserRatingStar rating={movie.userRating} />
-                </p>
+                {showRating && (
+                  <p className="flex items-center gap-2 font-semibold">
+                    <span className="text-gray-700">User Rating:</span>
+                    <UserRatingStar rating={movie.userRating} />
+                  </p>
+                )}
                 <p className="flex items-center gap-2 font-semibold">
                   <span className="text-gray-700">Genres:</span>
                   <span className="flex flex-wrap gap-2">

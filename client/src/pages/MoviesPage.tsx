@@ -8,6 +8,7 @@ import GenreTag from "../components/GenreTag";
 import UserRatingStar from "../components/UserRatingStar";
 import { useAlert } from "../context/AlertContext";
 import { useAuth } from "../context/AuthContext";
+import { useFeatureFlag } from "../experiments/useFeatureFlag";
 import Genre from "../models/Genre";
 import Movie from "../models/Movie";
 
@@ -21,6 +22,7 @@ export default function MoviesPage() {
   const [sortField, setSortField] = useState<"title" | "releaseDate" | "userRating">("userRating");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const showRating = useFeatureFlag("show_rating");
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -250,15 +252,17 @@ export default function MoviesPage() {
                     Like
                   </th>
                 ) : null}
-                <th
-                  scope="col"
-                  className="w-1/6 cursor-pointer px-3 py-3"
-                  onClick={() => handleSort("userRating")}
-                >
-                  <div className="flex items-center gap-2">
-                    User Rating {renderSortIcon("userRating")}
-                  </div>
-                </th>
+                {showRating && (
+                  <th
+                    scope="col"
+                    className="w-1/6 cursor-pointer px-3 py-3"
+                    onClick={() => handleSort("userRating")}
+                  >
+                    <div className="flex items-center gap-2">
+                      User Rating {renderSortIcon("userRating")}
+                    </div>
+                  </th>
+                )}
                 <th scope="col" className="w-1/6 px-3 py-3">
                   Genres
                 </th>
@@ -300,9 +304,11 @@ export default function MoviesPage() {
                       </button>
                     </td>
                   )}
-                  <td className="px-3 py-3 whitespace-nowrap">
-                    <UserRatingStar rating={movie.userRating} />
-                  </td>
+                  {showRating && (
+                    <td className="px-3 py-3 whitespace-nowrap">
+                      <UserRatingStar rating={movie.userRating} />
+                    </td>
+                  )}
                   <td className="px-3 py-3 whitespace-nowrap">{renderGenres(movie.genres)}</td>
                   <td className="px-3 py-3 whitespace-nowrap">{movie.formattedReleaseDate}</td>
                   <td className="px-3 py-3 whitespace-nowrap">{movie.mpaaRating}</td>

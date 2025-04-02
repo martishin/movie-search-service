@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@splitsoftware/splitio": "^11.2.0",
     "@tailwindcss/vite": "^4.0.8",
     "@types/react-test-renderer": "^19.0.0",
     "react": "^19.0.0",
