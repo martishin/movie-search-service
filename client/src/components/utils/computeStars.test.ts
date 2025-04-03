@@ -1,10 +1,10 @@
-// import { computeStars } from "./computeStars";
+import { computeStars } from "./computeStars";
 
-// describe("computeStars", () => {
-//   it("should return 0 full stars for rating 0", () => {
-//     expect(computeStars(5)).toEqual({ fullStars: 0, hasHalfStar: false, emptyStars: 5 });
-//   });
-// });
+describe("computeStars", () => {
+  it("should return 0 full stars for rating 0", () => {
+    expect(computeStars(5)).toEqual({ fullStars: 0, hasHalfStar: false, emptyStars: 5 });
+  });
+});
 
 // describe("computeStars", () => {
 //   it("should return 5 full stars for rating 5", () => {
