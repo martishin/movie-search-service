@@ -1,0 +1,132 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: movie-search-server
+  namespace: movie-search
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: movie-search-server
+  template:
+    metadata:
+      labels:
+        app: movie-search-server
+    spec:
+      containers:
+        - name: server
+          image: ghcr.io/martishin/movie-search-service-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8101
+          env:
+            - name: PORT
+              value: "8101"
+
+            # IMPORTANT:
+            # Your app must write logs to a real file path that Alloy can read.
+            # This overrides the .env.prod LOGS_PATH value.
+            - name: LOGS_PATH
+              value: "/var/log/app/movie-search.log"
+
+            # IMPORTANT:
+            # Alloy will scrape localhost:8101/metrics from inside the same pod.
+            - name: ALLOY_HOST
+              value: "127.0.0.1:8101"
+          envFrom:
+            - secretRef:
+                name: movie-search-env
+          volumeMounts:
+            - name: applogs
+              mountPath: /var/log/app
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8101
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8101
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+
+        - name: alloy
+          image: grafana/alloy:latest
+          imagePullPolicy: Always
+          args:
+            - run
+            - /etc/alloy/config.alloy
+            - --server.http.listen-addr=0.0.0.0:12345
+            - --storage.path=/var/lib/alloy/data
+          ports:
+            - containerPort: 12345
+          envFrom:
+            - secretRef:
+                name: movie-search-env
+          volumeMounts:
+            - name: alloy-config
+              mountPath: /etc/alloy
+              readOnly: true
+            - name: applogs
+              mountPath: /var/log/app
+              readOnly: true
+            - name: alloy-data
+              mountPath: /var/lib/alloy/data
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 12345
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: 12345
+            initialDelaySeconds: 10
+            periodSeconds: 20
+
+      volumes:
+        - name: applogs
+          emptyDir: { }
+        - name: alloy-data
+          emptyDir: { }
+        - name: alloy-config
+          configMap:
+            name: alloy-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: movie-search-server
+  namespace: movie-search
+spec:
+  selector:
+    app: movie-search-server
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8101
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alloy
+  namespace: movie-search
+spec:
+  selector:
+    app: movie-search-server
+  ports:
+    - name: http
+      port: 12345
+      targetPort: 12345
+      protocol: TCP
